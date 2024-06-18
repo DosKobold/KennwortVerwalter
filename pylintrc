@@ -1,0 +1,15 @@
+[BASIC]
+argument-naming-style=camelCase
+attr-naming-style=camelCase
+class-attribute-naming-style=camelCase
+docstring-min-length=5
+function-naming-style=camelCase
+method-naming-style=camelCase
+module-naming-style=camelCase
+variable-naming-style=camelCase
+
+[DESIGN]
+max-attributes=10
+
+[FORMAT]
+max-line-length=160
