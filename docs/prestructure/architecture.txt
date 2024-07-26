@@ -1,0 +1,26 @@
+
++----------------------------------------------------------------+
+| Graphics							 |
+| 	-> Implements a simple interface for TUI output		 |
+|								 |
++----------------------------------------------------------------+
+	^
+	|
+	| Sends the data to the Graphics
+	|
+	|
++----------------------------------------------------------------+		 +------------+
+| Datahandler							 |  reads data	 |	      |
+|	-> Holds the data					 |<------------->| FILESYSTEM |
+|								 |  writes data	 |	      |
++----------------------------------------------------------------+		 +------------+
+	^
+	|
+	| Sends and receives data to / from the encryptor
+	|
+	v
++----------------------------------------------------------------+
+| En- / Decryptor						 |
+|	-> Implements a simple interface for En- and Decryption  |
+|	-> Communicates with the API for safe passwords		 |
++----------------------------------------------------------------+

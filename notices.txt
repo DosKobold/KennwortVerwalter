@@ -1,0 +1,39 @@
+Aufgabenstellung:
+	- Passwortmanager mit Python 3 auf Linux
+	- TUI-basiert (curses)
+
+Nötige Funktionen:
+	- Mehrere Benutzer mit eigenen Passwörter in einer Datei
+	- Speicherung / Erstellen / Bearbeitung / Löschung von Einträgen mit folgenden Daten:
+		- Benutzername
+		- Passwort
+		- URL
+		- Notizen
+		- Kategorie
+		- Zeitstempel der Erstellung
+	- Speicherung alter Passwörter (-> Verhinderung der Wiederverwendung)
+	- Passwortgenerierung mit folgenden Optionen:
+		- Länge
+		- Zeichensatz (Groß- / Kleinbuchstaben, Zahlen, Sonderzeichen)
+		- Passwortstärke
+	- Passwortprüfung mit API
+	- Suche mit Hilfe von Begriffen
+
+Toolanforderungen:
+	- Unittest mit unittest
+	- Abdeckung mit coverage (min. 75%)
+	- Statische Analyse mit pylint (Keine Warnungen, keine Kommentare in Testdateien)
+	- Typisierung mit mypy
+
+Dokumentation (PDF):
+	- Funktionen
+	- Aufbau
+	- Versionen
+	- Architekturbeschreibung
+	- Speicherformat
+	- Nutzerinterface
+	- Programmablauf
+	- Ergebnisse aller Tools
+
+Abgabe:
+	- Vor Abgabe Selbstbewertung (Excel)

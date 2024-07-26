@@ -8,3 +8,8 @@ Authors:     Tom Schwindl  <schwindl@posteo.de>
              Paul Stöckle  <paul.stoeckle@t-online.de>
              Elias Schnick <eliasschnick@t-online.de>
              Ben Oeckl     <ben@oeckl.com>
+
+
+
+How to setup a virtual environment for python (needed for cryptography):
+https://linuxconfig.org/how-to-set-up-a-python-virtual-environment-on-debian-10-buster
