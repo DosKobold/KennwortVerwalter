@@ -7,9 +7,13 @@ function-naming-style=camelCase
 method-naming-style=camelCase
 module-naming-style=camelCase
 variable-naming-style=camelCase
+good-names=
+good-names-rgxs=^__[a-zA-Z0-9]*$
 
 [DESIGN]
 max-attributes=10
+max-args=8
+max-branches=20
 
 [FORMAT]
 max-line-length=160
