@@ -1,0 +1,55 @@
+account, key, data
+Ben, <hashed password>, <secured JSON>
+Paul, <hashed password>, <secured JSON>
+Tom, <hashed password>, <secured JSON>
+
+
+Example of decrypted JSON:
+{
+	"entries": [
+		"Web": [
+			{
+				"title": "Google",
+				"name":  "Ben89HD",
+				"password": "bello123",
+				"url": "https://google.com",
+				"notices": "Google is super",
+				"timestamp": "2024-07-27"
+			}
+			{
+				"title": "Facebook",
+				"name":  "Ben88HD",
+				"password": "bello123._",
+				"url": "https://facebook.com",
+				"notices": "Facebook is super",
+				"timestamp": "2024-04-17"
+			}
+		]
+		"DHBW": [
+			{
+				"title": "Moodle",
+				"name":  "Ben.Oeckl",
+				"password": "bel875!",
+				"url": "https://dhbw-moodle.de",
+				"notices": "Nothing to do",
+				"timestamp": "2023-11-04"
+			}
+			{
+				"title": "Outlook",
+				"name":  "Ben.Oeckl",
+				"password": "dfio23",
+				"url": "https://dhbw-outlook.de",
+				"notices": "",
+				"timestamp": "2024-01-13"
+			}
+		]
+	]
+	"oldPasswords": [
+		{
+			"oldPassword": "123."
+		},
+		{
+			"oldPassword": "123!"
+		}
+	]
+}

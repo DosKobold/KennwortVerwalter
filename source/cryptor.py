@@ -5,6 +5,7 @@ Desc: Implements a simple interface for the Datahandler. En- and decrypts text w
       Hashes a password to a masterkey. Checks if a password is the mastekey. Generates and checks
       passwords. 
 """
+#FIXME: Problem with decrypting. Fernet (__setMasterKey(key)) uses random salt! After the file with the encrypted string is safed  and the program restarted it can not be decrypted anymore because the fernet is not the same anymore.
 
 import os
 import hashlib
@@ -165,7 +166,7 @@ if __name__ == "__main__":
     IS_CORRECT = cryptor.isCorrectKey(OTHER_PASSWORD, HASHED_PASSWORD)
     print("Is other password = hash? " + str(IS_CORRECT))
 
-    TEXT = "Hallo, ich bins!"
+    TEXT = "Hallo, ich bins!\n Wer bist du?"
     print("Text: " + TEXT)
 
     ENCRYPTED_TEXT = cryptor.encryptText(TEXT)
