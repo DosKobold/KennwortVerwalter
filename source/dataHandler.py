@@ -6,28 +6,49 @@ Desc: Implements a simple interface for the main.
 
 import csv
 import json
+import cryptor
 from typing import List
 
-class Datahandler:
+class DataHandler:
     """Class for handling data"""
 
     __path: str
     __user: str
     __entries: dict[str, list[dict[str, str]]]
     __oldPasswords: list[str]
+    __cryptor: cryptor.Cryptor()
+
+    def __init__(self, cryptor: cryptor.Cryptor()) -> None:
+        self.__cryptor = cryptor
 
     def createFile(self, path: str, user: str, key: str) -> None:
         """0th step: create file"""
         with open(path, "w", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=",")
             writer.writerow(["account", "key", "data"])
-            writer.writerow([user, key, "{\"entries\":{\"EgCategory\":[{\"title\":\"Example\",\"name\":\"Example\",\"password\":\"Example\",\"url\":\"Example\",\"notices\":\"Example\",\"timestamp\":\"Example\"}]},\"oldPasswords\":[\"Example\",\"Example2\"]}"])
+            writer.writerow([user, key, self.__cryptor.encryptText("{\"entries\":{\"EgCategory\":[{\"title\":\"Example\",\"name\":\"Example\",\"password\":\"Example\",\"url\":\"Example\",\"notices\":\"Example\",\"timestamp\":\"Example\"}]},\"oldPasswords\":[\"Example\",\"Example2\"]}")])
 
     def openFile(self, path: str,) -> None:
         """1st step: open a file"""
         self.__path = path
 
-    def closeFile(self, encryptedData: str) -> None:
+    def startSession(self) -> None:
+        """5th step: hold the decrypted data in memory"""
+        with open(self.__path, "r", encoding="utf-8") as file:
+            reader = csv.DictReader(file)
+            data = []
+            for row in reader:
+                data.append(row)
+        for dictonary in data:
+            if dictonary["account"] == self.__user:
+                encryptedData = dictonary["data"]
+                break
+        jsonData = json.loads(self.__cryptor.decryptText(encryptedData))
+        print("DEBUG " + str(jsonData))
+        self.__entries = jsonData["entries"]
+        self.__oldPasswords = jsonData["oldPasswords"]
+
+    def closeSession(self) -> None:
         """last step: write the encrypted data and close the file"""
         with open(self.__path, "r", encoding="utf-8") as file:
             reader = csv.DictReader(file)
@@ -36,7 +57,7 @@ class Datahandler:
                 data.append(row)
         for dictonary in data:
             if dictonary["account"] == self.__user:
-                dictonary["data"] = encryptedData
+                dictonary["data"] = self.__cryptor.encryptText(json.dumps({"entries":self.__entries, "oldPasswords":self.__oldPasswords}))
                 break
         with open(self.__path, "w", encoding="utf-8") as file:
             fieldnames = ["account", "key", "data"]
@@ -58,9 +79,9 @@ class Datahandler:
         """3rd step: add a user"""
         with open(self.__path, "a", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=",")
-            writer.writerow([user, key, ""])
+            writer.writerow([user, key, self.__cryptor.encryptText("{\"entries\":{\"EgCategory\":[{\"title\":\"Example\",\"name\":\"Example\",\"password\":\"Example\",\"url\":\"Example\",\"notices\":\"Example\",\"timestamp\":\"Example\"}]},\"oldPasswords\":[\"Example\",\"Example2\"]}")])
 
-    def remUser(self, user: str) -> None:
+    def remUser(self) -> None:
         """6th step: remove the choosen user"""
         with open(self.__path, "r", encoding="utf-8") as file:
             reader = csv.DictReader(file)
@@ -68,7 +89,7 @@ class Datahandler:
             for row in reader:
                 data.append(row)
         for dictonary in data:
-            if dictonary["account"] == user:
+            if dictonary["account"] == self.__user:
                 data.remove(dictonary)
         with open(self.__path, "w", encoding="utf-8") as file:
             fieldnames = ["account", "key", "data"]
@@ -91,29 +112,8 @@ class Datahandler:
                 break
         return key
 
-    def getEncryptedData(self) -> str:
-        """4th step: get the secured data of the called user"""
-        with open(self.__path, "r", encoding="utf-8") as file:
-            reader = csv.DictReader(file)
-            data = []
-            for row in reader:
-                data.append(row)
-        for dictonary in data:
-            if dictonary["account"] == self.__user:
-                encryptedData = dictonary["data"]
-                break
-        return encryptedData
-
-    def getDecryptedData(self) -> str:
-        """7th step: get the hold data of the called user"""
-        print(self.__entries)
-        return json.dumps({"entries":self.__entries, "oldPassword":self.__oldPasswords})
-
-    def setDecryptedData(self, decryptedData: str) -> None:
-        """5th step: hold the decrypted data in memory"""
-        jsonData = json.loads(decryptedData)
-        self.__entries = jsonData["entries"]
-        self.__oldPasswords = jsonData["oldPasswords"]
+    def getCategories(self) -> list[str]:
+        return list(self.__entries.keys())
 
     def getEntries(self, category: str) -> list[dict[str, str]]:
         """6th step: get all entries of one category"""
@@ -132,14 +132,14 @@ class Datahandler:
 
     def changeEntry(self, category: str, title: str, prop: str, value: str) -> None:
         """6th step: change and entry"""
-        for entry in self.__entries:
+        for entry in self.__entries[category]:
             if entry["title"] == title:
                 entry[prop] = value
                 break
 
     def getOldPasswords(self) -> list[str]:
         """6th step: get all old password"""
-        return oldPasswords
+        return self.__oldPasswords
 
     def addOldPassword(self, oldPassword: str) -> None:
         """6th step: add an old password"""
@@ -149,7 +149,8 @@ class Datahandler:
 if __name__ == "__main__":
     print("--- Dev test of Datahandler ---")
 
-    dataHandler = Datahandler()
+    cryptor = cryptor.Cryptor()
+    dataHandler = DataHandler(cryptor)
     dataHandler.createFile("autoCreated.kwv", "Paul", "dfgfjhfgs3432rwsfw")
     dataHandler.openFile("autoCreated.kwv")
     print(dataHandler.getUsers())
