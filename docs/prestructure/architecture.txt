@@ -1,24 +1,24 @@
 
 +----------------------------------------------------------------+
 | Graphics							 |
-| 	-> Implements a simple interface for TUI output		 |
+| 	-> Implements a simple interface for TUI input / output	 |
 |								 |
 +----------------------------------------------------------------+
 	^
 	|
-	| Sends the data to the Graphics
+	| Sends the data to the Graphics and receives input
 	|
 	|
-+----------------------------------------------------------------+		 +------------+
-| Datahandler							 |  reads data	 |	      |
-|	-> Holds the data					 |<------------->| FILESYSTEM |
-|								 |  writes data	 |	      |
-+----------------------------------------------------------------+		 +------------+
-	^
-	|
-	| Sends and receives data to / from the encryptor
-	|
-	v
++--------------+		+--------------------------------+		 +------------+
+|     Main     |    sets data	| Datahandler			 |  reads data	 |	      |
+|Compines Back-|<-------------->|	-> Holds the data	 |<------------->| FILESYSTEM |
+| and Frontend |    gets data	|				 |  writes data	 |	      |
++--------------+		+--------------------------------+		 +------------+
+	^			    			      ^
+	|			    			      |
+	|  Sends and receives data to / from the encryptor    |                 
+	|			    			      |
+	v			    			      v
 +----------------------------------------------------------------+
 | En- / Decryptor						 |
 |	-> Implements a simple interface for En- and Decryption  |
