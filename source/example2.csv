@@ -6,7 +6,7 @@ Tom, <hashed password>, <secured JSON>
 
 Example of decrypted JSON:
 {
-	"entries": [
+	"entries": {
 		"Web": [
 			{
 				"title": "Google",
@@ -43,13 +43,9 @@ Example of decrypted JSON:
 				"timestamp": "2024-01-13"
 			}
 		]
-	]
+	}
 	"oldPasswords": [
-		{
-			"oldPassword": "123."
-		},
-		{
-			"oldPassword": "123!"
-		}
+			"123.",
+			"123!"
 	]
 }
