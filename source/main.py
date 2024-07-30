@@ -10,6 +10,16 @@ import dataHandler
 if __name__ == "__main__":
     print("main")
 
+    ### EXAMPLE FOR FRONTED DEVELOPERS ###
+    #frontend = frontend.Frontend()
+    #frontend.loginScreen(dataHandler.getUsers(): str) -> tuple(user:str, password: str)
+    #if password correct:
+    #frontend.mainScreen(dataHandler.getCategories() -> list[str]) -> None
+    #if frontend.getKey() == "enter":
+        #frontend.entryView(dataHandler.getEntry(frontend.getChoosen() -> str)) -> None
+        #if frontend.getKey() == "N":
+            #dataHandler.addEntry(frontend.getChoosen())
+
 
     ### TODO DEVELOPMENT AREA TO BE REMOVED ###
     print("--- Dev test of backend interaction ---")
@@ -18,7 +28,7 @@ if __name__ == "__main__":
     dataHandler = dataHandler.DataHandler(cryptor)
     
     #FIRST RUN
-    #dataHandler.createFile("autoCreated.kwv", "paul", cryptor.hashKey("test123", True))
+    dataHandler.createFile("autoCreated.kwv", "paul", cryptor.hashKey("test123", True))
     dataHandler.openFile("autoCreated.kwv") #IMPORTANT CALL
     print(dataHandler.getUsers())
     #dataHandler.addUser("Klaus", cryptor.hashKey("test246", True))

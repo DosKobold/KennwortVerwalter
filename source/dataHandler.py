@@ -14,7 +14,7 @@ class DataHandler:
 
     __path: str
     __user: str
-    __entries: dict[str, list[dict[str, str]]]
+    __entries: dict[str, dict[str, dict[str, str]]]
     __oldPasswords: list[str]
     __cryptor: cryptor.Cryptor()
 
@@ -26,7 +26,7 @@ class DataHandler:
         with open(path, "w", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=",")
             writer.writerow(["account", "key", "data"])
-            writer.writerow([user, key, self.__cryptor.encryptText("{\"entries\":{\"EgCategory\":[{\"title\":\"Example\",\"name\":\"Example\",\"password\":\"Example\",\"url\":\"Example\",\"notices\":\"Example\",\"timestamp\":\"Example\"}]},\"oldPasswords\":[\"Example\",\"Example2\"]}")])
+            writer.writerow([user, key, self.__cryptor.encryptText("{\"entries\":{\"EgCategory\":{\"Example\":{\"name\":\"Example\",\"password\":\"Example\",\"url\":\"Example\",\"notices\":\"Example\",\"timestamp\":\"Example\"}}},\"oldPasswords\":[\"Example\",\"Example2\"]}")])
 
     def openFile(self, path: str,) -> None:
         """1st step: open a file"""
@@ -79,7 +79,7 @@ class DataHandler:
         """3rd step: add a user"""
         with open(self.__path, "a", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=",")
-            writer.writerow([user, key, self.__cryptor.encryptText("{\"entries\":{\"EgCategory\":[{\"title\":\"Example\",\"name\":\"Example\",\"password\":\"Example\",\"url\":\"Example\",\"notices\":\"Example\",\"timestamp\":\"Example\"}]},\"oldPasswords\":[\"Example\",\"Example2\"]}")])
+            writer.writerow([user, key, self.__cryptor.encryptText("{\"entries\":{\"EgCategory\":{\"title\":{\"Example\",\"name\":\"Example\",\"password\":\"Example\",\"url\":\"Example\",\"notices\":\"Example\",\"timestamp\":\"Example\"}}},\"oldPasswords\":[\"Example\",\"Example2\"]}")])
 
     def remUser(self) -> None:
         """6th step: remove the choosen user"""
@@ -116,35 +116,34 @@ class DataHandler:
         return list(self.__entries.keys())
 
     def addCategory(self, category: str) -> None:
-        self.__entries[category]: list[dict[str, str]]
+        self.__entries[category]: dict[str, [dict[str, str]]]
 
-    def remCategory(self, category: name) -> None:
+    def remCategory(self, category: str) -> None:
         del self.__entries[category]
 
-    def getEntries(self, category: str) -> list[dict[str, str]]:
+    def getEntries(self, category: str) -> dict[str, [dict[str, str]]]:
         """6th step: get all entries of one category"""
         return self.__entries[category]
+   
+    def getEntry(self, category: str, title: str) -> dict[str, str]:
+        return self.__entries[category][title]
 
     def addEntry(self, category: str, title: str, name: str, password: str, url: str, notices: str, timestamp: str) -> None:
         """6th step add an entry"""
-        self.__entries[category].append({
-            "title": title,
+        self.__entries[category][title] = {
             "name": name,
             "password": password,
             "url": url,
             "notices": notices,
             "timestamp": timestamp
-        })
+        }
 
     def changeEntry(self, category: str, title: str, prop: str, value: str) -> None:
         """6th step: change and entry"""
-        for entry in self.__entries[category]:
-            if entry["title"] == title:
-                entry[prop] = value
-                break
+        self.__entries[category][title][prop] = value
 
     def remEntry(self, category: str, title: str) -> None:
-        self.__entries[category] #Loop
+        del self.__entries[category][title]
 
     def getOldPasswords(self) -> list[str]:
         """6th step: get all old password"""

@@ -5,7 +5,6 @@ Desc: Implements a simple interface for the Datahandler. En- and decrypts text w
       Hashes a password to a masterkey. Checks if a password is the mastekey. Generates and checks
       passwords. 
 """
-#FIXME: Problem with decrypting. Fernet (__setMasterKey(key)) uses random salt! After the file with the encrypted string is safed  and the program restarted it can not be decrypted anymore because the fernet is not the same anymore.
 
 import os
 import hashlib
@@ -23,11 +22,11 @@ class Cryptor:
     __fernet = None
 
     def __setMasterKey(self, key: str) -> None:
-        #salt = os.urandom(16)
+        salt = "IamSalty_asThIs!Pr0jEcT".encode("utf-8")
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
-            salt=key.encode("utf-8"),
+            salt=salt,
             iterations=480000,
         )
         masterKey = base64.urlsafe_b64encode(kdf.derive(key.encode("utf-8")))
@@ -67,7 +66,6 @@ class Cryptor:
         token = self.__fernet.decrypt(text.encode("utf-8")) #type: ignore
         return token.decode("utf-8")
 
-    #TODO Move in to a new class. Exclusively for main interaction
     def genPassword(self, length: int, digits: bool, others: bool, upper: bool, lower: bool, forbidden: str) -> str:
         """Generates a password with several options"""
         chars    = 0
@@ -110,7 +108,6 @@ class Cryptor:
 
         return str(password)
 
-    #TODO Move in to a new class. Exclusively for main interaction
     def isSafe(self, text: str) -> tuple[bool, str]:
         """Checks if a given password is safe. Provides a additional description string"""
         isSecure  = True
