@@ -115,6 +115,12 @@ class DataHandler:
     def getCategories(self) -> list[str]:
         return list(self.__entries.keys())
 
+    def addCategory(self, category: str) -> None:
+        self.__entries[category]: list[dict[str, str]]
+
+    def remCategory(self, category: name) -> None:
+        del self.__entries[category]
+
     def getEntries(self, category: str) -> list[dict[str, str]]:
         """6th step: get all entries of one category"""
         return self.__entries[category]
@@ -136,6 +142,9 @@ class DataHandler:
             if entry["title"] == title:
                 entry[prop] = value
                 break
+
+    def remEntry(self, category: str, title: str) -> None:
+        self.__entries[category] #Loop
 
     def getOldPasswords(self) -> list[str]:
         """6th step: get all old password"""
