@@ -34,7 +34,7 @@ class Cryptor:
 
     def __wrongUsage(self) -> None:
         print("[Cryptor] ERROR: Wrong usage of Cryptor! Wrong order of method calls! No master key set!")
-        exit()
+        sys.exit(1)
 
     def hashKey(self, key: str, externalCall: bool) -> str:
         hashedKey = hashlib.sha3_512(key.encode("utf-8"))

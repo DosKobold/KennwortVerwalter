@@ -6,6 +6,7 @@ Desc: Bridge between frontend and backend
 
 import cryptor
 import dataHandler
+import objectAlreadyExistsException
 
 if __name__ == "__main__":
     print("main")
@@ -26,22 +27,34 @@ if __name__ == "__main__":
 
     cryptor = cryptor.Cryptor()
     dataHandler = dataHandler.DataHandler(cryptor)
-    
-    #FIRST RUN
-    dataHandler.createFile("autoCreated.kwv", "paul", cryptor.hashKey("test123", True))
-    dataHandler.openFile("autoCreated.kwv") #IMPORTANT CALL
-    print(dataHandler.getUsers())
-    #dataHandler.addUser("Klaus", cryptor.hashKey("test246", True))
 
-    if cryptor.isCorrectKey("test123", dataHandler.getKey("paul")): #IF CLAUSE AND GETKEY ARE IMPORTANT CALLS
-        dataHandler.startSession() #Data will be read from the file (openFile) and from user with the key (getKey) #IMPORTANT CALL
-        print(dataHandler.getCategories())
-        print(dataHandler.getEntries("EgCategory"))
-        print(dataHandler.getOldPasswords())
-        dataHandler.addOldPassword("hund78")
-        dataHandler.addEntry("EgCategory", "Youtube", "benHD89", "hund78", "youtube.com", "Youtube is klasse", "2024-07-28")
-        dataHandler.changeEntry("EgCategory", "Youtube", "name", "geänderter name")
-        dataHandler.closeSession() #Data will be encrypted and written to disk #IMPORTANT CALL
+    #FIRST RUN
+    try:
+        dataHandler.createFile("autoCreated.kwv", "paul", cryptor.hashKey("test123", True))
+        dataHandler.openFile("autoCreated.kwv") #IMPORTANT CALL
+        print(dataHandler.getUsers())
+        dataHandler.addUser("Klaus", cryptor.hashKey("test246", True))
+
+        if cryptor.isCorrectKey("test123", dataHandler.getKey("paul")): #IF CLAUSE AND GETKEY ARE IMPORTANT CALLS
+            dataHandler.startSession() #Data will be read from the file (openFile) and from user with the key (getKey) #IMPORTANT CALL
+            print(dataHandler.getCategories())
+            print(dataHandler.getEntries("EgCategory"))
+            print(dataHandler.getOldPasswords())
+            dataHandler.addOldPassword("hund78")
+            dataHandler.addEntry("EgCategory", "Youtube", "benHD89", "hund78", "youtube.com", "Youtube is klasse", "2024-07-28")
+            #dataHandler.addEntry("EgCategory", "Youtube", "benHD89", "hund78", "youtube.com", "Youtube is klasse", "2024-07-28")
+            dataHandler.changeEntry("EgCategory", "Youtube", "name", "geänderter name")
+            dataHandler.closeSession() #Data will be encrypted and written to disk #IMPORTANT CALL
+    except FileNotFoundError:
+        print("File not found!")
+    except PermissionError:
+        print("No permissions to access file")
+    except OSError:
+        print("Some OS error occured")
+    #except KeyError:
+    #    print("Data is invalid")
+    except objectAlreadyExistsException.ObjectAlreadyExistsException:
+        print("The wanted object already exists")
 
     #SECOND RUN
     dataHandler.openFile("autoCreated.kwv") #IMPORTANT CALL
@@ -53,6 +66,6 @@ if __name__ == "__main__":
         print(dataHandler.getEntries("EgCategory"))
         print(dataHandler.getOldPasswords())
         dataHandler.closeSession() #Data will be encrypted and written to disk #IMPORTANT CALL
-        
+    
     print("---------------------------------------")
     ###########################################
