@@ -29,12 +29,13 @@ class Frontend:
 
     def loginScreen(self) -> None:
         self.__initTerm()
-        self.__screen.addstr(6, 10, "Username:")
-        self.__screen.addstr(11, 10, "Password:")
+        self.__screen.addstr(3, 35, "KennwortVerwaltung")
+        self.__screen.addstr(8, 10, "Username:")
+        self.__screen.addstr(13, 10, "Password:")
         self.__screen.refresh()
 
-        winUsername = curses.newwin(1, 30, 6, 22)
-        winPassword = curses.newwin(1, 30, 11, 22)
+        winUsername = curses.newwin(1, 30, 8, 22)
+        winPassword = curses.newwin(1, 30, 13, 22)
         username = curses.textpad.Textbox(winUsername, insert_mode=True)
         password = curses.textpad.Textbox(winPassword, insert_mode=True)
         inputUsername = username.edit()
