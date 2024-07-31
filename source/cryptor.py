@@ -69,7 +69,7 @@ class Cryptor:
     def genPassword(self, length: int, digits: bool, others: bool, upper: bool, lower: bool, forbidden: str) -> str:
         """Generates a password with several options"""
         chars    = 0
-        alphabet = str(None)
+        alphabet = ""
 
         if digits:
             chars    += 1
@@ -84,7 +84,7 @@ class Cryptor:
             chars    += 1
             alphabet += string.ascii_lowercase
 
-        if (alphabet is str(None)) or (chars > length):
+        if (not alphabet) or (chars > length):
             return str("")
 
         while True:
@@ -147,38 +147,38 @@ class Cryptor:
 
 
 ### TODO DEVELOPMENT AREA TO BE REMOVED ###
-if __name__ == "__main__":
-    print("--- Dev test of cryptor ---")
+#if __name__ == "__main__":
+ #   print("--- Dev test of cryptor ---")
 
-    cryptor = Cryptor()
+ #   cryptor = Cryptor()
 
-    PASSWORD = "Test123"
-    print("Password: " + PASSWORD)
+ #   PASSWORD = "Test123"
+ #   print("Password: " + PASSWORD)
 
-    HASHED_PASSWORD = cryptor.hashKey(PASSWORD, True)
-    print("Hashed password: " + HASHED_PASSWORD)
+ #   HASHED_PASSWORD = cryptor.hashKey(PASSWORD, True)
+ #   print("Hashed password: " + HASHED_PASSWORD)
 
-    OTHER_PASSWORD = "Test123a"
-    print("Other password: " + OTHER_PASSWORD)
+ #   OTHER_PASSWORD = "Test123a"
+ #   print("Other password: " + OTHER_PASSWORD)
 
-    IS_CORRECT = cryptor.isCorrectKey(OTHER_PASSWORD, HASHED_PASSWORD)
-    print("Is other password = hash? " + str(IS_CORRECT))
+ #   IS_CORRECT = cryptor.isCorrectKey(OTHER_PASSWORD, HASHED_PASSWORD)
+ #   print("Is other password = hash? " + str(IS_CORRECT))
 
-    TEXT = "Hallo, ich bins!\n Wer bist du?"
-    print("Text: " + TEXT)
+ #   TEXT = "Hallo, ich bins!\n Wer bist du?"
+ #   print("Text: " + TEXT)
 
-    ENCRYPTED_TEXT = cryptor.encryptText(TEXT)
-    print("Encrypted text: " + ENCRYPTED_TEXT)
+ #   ENCRYPTED_TEXT = cryptor.encryptText(TEXT)
+ #   print("Encrypted text: " + ENCRYPTED_TEXT)
 
-    DECRYPTED_TEXT = cryptor.decryptText(ENCRYPTED_TEXT)
-    print("Decrypted text: " + DECRYPTED_TEXT)
+ #   DECRYPTED_TEXT = cryptor.decryptText(ENCRYPTED_TEXT)
+ #   print("Decrypted text: " + DECRYPTED_TEXT)
 
-    NEW_PASSWORD = cryptor.genPassword(4, True, True, True, True, "Test")
-    print("New password: " +  NEW_PASSWORD)
+ #   NEW_PASSWORD = cryptor.genPassword(300, False, False, False, False, "")
+ #   print("New password: " +  NEW_PASSWORD)
 
-    IS_SAFE = cryptor.isSafe(NEW_PASSWORD)
-    print("Is new password safe? " + str(IS_SAFE[0]))
-    print("\tReason(s): " + str(IS_SAFE[1]))
+ #   IS_SAFE = cryptor.isSafe(NEW_PASSWORD)
+ #   print("Is new password safe? " + str(IS_SAFE[0]))
+ #   print("\tReason(s): " + str(IS_SAFE[1]))
 
-    print("---------------------------")
+ #   print("---------------------------")
 ###########################################
