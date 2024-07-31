@@ -29,7 +29,7 @@ class Frontend:
 
     def loginScreen(self) -> None:
         self.__initTerm()
-        self.__screen.addstr(3, 35, "KennwortVerwaltung")
+        self.__screen.addstr(3, 35, "KennwortVerwaltung", curses.A_UNDERLINE)
         self.__screen.addstr(8, 10, "Username:")
         self.__screen.addstr(13, 10, "Password:")
         self.__screen.refresh()
