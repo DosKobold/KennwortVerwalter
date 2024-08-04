@@ -132,14 +132,18 @@ class Cryptor:
         #Search password in the haveibeenpwned database
         url = "https://api.pwnedpasswords.com/range/"
         sha1 = str(hashlib.sha1(text.encode("utf-8")).hexdigest()).upper()
-        response = requests.get(url + sha1[:5])
-        if response.status_code == 200:
-            for line in response.text.splitlines():
-                if sha1[5:] in line:
-                    isSecure = False
-                    message += "Password is well known|"
-        else:
-            print(f"[Cryptor] WARNING: Can not reach \"{url}\"! Status code: {response.status_code}")
+
+        try:
+            response = requests.get(url + sha1[:5])
+            if response.status_code == 200:
+                for line in response.text.splitlines():
+                    if sha1[5:] in line:
+                        isSecure = False
+                        message += "Password is well known|"
+            else:
+                print(f"[Cryptor] WARNING: Can not reach \"{url}\"! Status code: {response.status_code}")
+        except Exception:
+            message += "Check with API \"" + url + "\" failed - Maybe there is no internet connection"
 
         message = message[:-1].replace("|", ", ")
         return (isSecure, message)
