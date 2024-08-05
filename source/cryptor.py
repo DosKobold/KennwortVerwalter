@@ -7,6 +7,7 @@ Desc: Implements a simple interface for the Datahandler. En- and decrypts text w
 """
 
 import os
+import sys
 import hashlib
 import secrets
 import base64

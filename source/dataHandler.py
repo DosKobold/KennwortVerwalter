@@ -125,6 +125,13 @@ class DataHandler:
             writer.writeheader()
             for dictonary in data:
                 writer.writerow(dictonary)
+        self.__path = ""
+        self.__user = ""
+        self.__entries = {}
+        self.__oldPasswords = []
+        self.__sessionIsOpen = False
+        self.__fileIsOpen = False
+        self.__keyIsSet = False
 
     def getKey(self, user:str) -> str:
         """3rd step: get the key of the user"""
@@ -152,7 +159,7 @@ class DataHandler:
         self.__ifSessionIsNotOpen("No session opened! Wrong order of calls!")
         del self.__entries[category]
 
-    def getEntries(self, category: str) -> dict[str, dict[str, str]]:
+    def getEntries(self, category: str) -> list[str]:
         """6th step: get all entries of one category"""
         self.__ifSessionIsNotOpen("No session opened! Wrong order of calls!")
         return self.__entries[category]
