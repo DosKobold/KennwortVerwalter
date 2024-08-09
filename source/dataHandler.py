@@ -115,7 +115,8 @@ class DataHandler:
         """6th step: remove the choosen user"""
         self.__ifFileIsNotOpen("No file opened! Wrong order of calls!")
         data = self.__getFileContent()
-        for dictonary in data:
+        dataCopy = data
+        for dictonary in dataCopy:
             if dictonary["account"] == self.__user:
                 data.remove(dictonary)
                 break
@@ -162,7 +163,7 @@ class DataHandler:
     def getEntries(self, category: str) -> list[str]:
         """6th step: get all entries of one category"""
         self.__ifSessionIsNotOpen("No session opened! Wrong order of calls!")
-        return self.__entries[category]
+        return self.__entries[category].keys()
 
     def getEntry(self, category: str, title: str) -> dict[str, str]:
         self.__ifSessionIsNotOpen("No session opened! Wrong order of calls!")
