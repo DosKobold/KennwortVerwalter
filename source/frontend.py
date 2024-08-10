@@ -106,9 +106,9 @@ class Frontend:
 
     def ensure_default_category(self) -> None:
         """Ensure that the default category exists."""
-        if "default" not in self.data_handler.getCategories():
-            # Temporarily use addEntry to initialize the category
-            self.data_handler.addEntry("default", "", "", "", "", "", "")
+        categories = self.data_handler.getCategories()
+        if "default" not in categories:
+            self.data_handler.addCategory("default")
 
     def add_entry(self, stdscr: Any) -> None:
         curses.curs_set(1)
@@ -137,24 +137,36 @@ class Frontend:
         stdscr.getch()
 
     def get_input(self, stdscr: Any, y: int, x: int) -> str:
-        curses.echo()
+        curses.noecho()
         win = curses.newwin(1, 30, y, x)
         win.keypad(True)
         curses.curs_set(1)
         box: List[str] = []
+        pos = 0  # Cursor-Position
+
         while True:
-            key = win.get_wch()
-            if isinstance(key, str) and key in ("\n", "\r"):  # Enter key
+            key = win.getch()
+
+            if key in (curses.KEY_ENTER, 10, 13):  # Enter key
                 break
-            elif key in ("\b", "\x7f", "\x08"):  # Backspace key
-                if len(box) > 0:
-                    win.addstr(0, len(box) - 1, ' ')
-                    win.move(0, len(box) - 1)
-                    box.pop()
-            elif isinstance(key, str) and (key.isprintable() or key in "\n\r"):
-                if len(box) < 30:  # Ensure we don't exceed window width
-                    box.append(key)
-                    win.addstr(0, len(box) - 1, key)
+            elif key in (curses.KEY_BACKSPACE, 8, 127):  # Backspace key
+                if pos > 0:
+                    pos -= 1  # Bewegt die Cursor-Position nach links
+                    box.pop(pos)  # Entfernt das Zeichen an der aktuellen Position
+                    win.move(0, 0)
+                    win.clrtoeol()  # Löscht die Zeile, um sicherzustellen, dass das Zeichen entfernt wird
+                    win.addstr(0, 0, ''.join(box))  # Zeigt die verbleibenden Zeichen an
+                    win.move(0, pos)  # Bewegt den Cursor zurück an die richtige Position
+            elif 32 <= key <= 126:  # Zeichenbare Zeichen
+                if len(box) < 30:  # Sicherstellen, dass wir die Fensterbreite nicht überschreiten
+                    box.insert(pos, chr(key))  # Fügt das Zeichen an der aktuellen Position hinzu
+                    pos += 1  # Bewegt die Cursor-Position nach rechts
+                    win.clear()  # Löscht das Eingabefeld
+                    win.addstr(0, 0, ''.join(box))  # Zeigt die aktuelle Eingabe an
+                    win.move(0, pos)  # Setzt den Cursor an die neue Position
+
+            win.refresh()
+
         curses.curs_set(0)
         return ''.join(box)
 
@@ -183,21 +195,41 @@ class Frontend:
         stdscr.refresh()
         stdscr.addstr(0, 0, "Edit Entry")
 
-        stdscr.addstr(2, 0, "Enter entry title: ")
-        title = self.get_input(stdscr, 2, 20)
-
-        stdscr.addstr(3, 0, "Enter property to change (title, name, password, url, notices, timestamp): ")
-        prop = self.get_input(stdscr, 3, 50)
-
-        stdscr.addstr(4, 0, "Enter new value: ")
-        value = self.get_input(stdscr, 4, 20)
-
+        # Zuerst die Kategorie überprüfen und sicherstellen, dass die "default"-Kategorie existiert
         self.ensure_default_category()
 
-        self.data_handler.changeEntry("default", title, prop, value)
+        # Einträge in der "default"-Kategorie abrufen
+        entries = self.data_handler.getEntries("default")
 
-        stdscr.addstr(6, 0, "Entry updated! Press any key to return to the main menu.")
+        # Falls keine Einträge vorhanden sind, Benutzer informieren und zurückkehren
+        if not entries:
+            stdscr.addstr(2, 0, "No entries to edit in the 'default' category.")
+            stdscr.addstr(4, 0, "Press any key to return to the main menu.")
+            stdscr.getch()
+            return
+
+        # Die Liste der Einträge anzeigen
+        stdscr.addstr(2, 0, "Select an entry to edit:")
+        for idx, entry in enumerate(entries):
+            stdscr.addstr(3 + idx, 0, f"{idx + 1}. {entry['title']}")
+
+        # Benutzer wählt einen Eintrag aus
+        selected_index = int(self.get_input(stdscr, 3 + len(entries), 0)) - 1
+        selected_entry = entries[selected_index]
+
+        # Benutzer gibt die zu ändernde Eigenschaft und den neuen Wert ein
+        stdscr.addstr(4 + len(entries), 0, "Enter property to change (title, name, password, url, notices, timestamp): ")
+        prop = self.get_input(stdscr, 5 + len(entries), 0)
+
+        stdscr.addstr(6 + len(entries), 0, "Enter new value: ")
+        value = self.get_input(stdscr, 7 + len(entries), 0)
+
+        # Aktualisierung des Eintrags
+        self.data_handler.changeEntry("default", selected_entry['title'], prop, value)
+
+        stdscr.addstr(9 + len(entries), 0, "Entry updated! Press any key to return to the main menu.")
         stdscr.getch()
+
 
     def delete_entry(self, stdscr: Any) -> None:
         curses.curs_set(1)
