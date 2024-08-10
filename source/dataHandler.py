@@ -186,6 +186,20 @@ class DataHandler:
         self.__ifSessionIsNotOpen("No session opened! Wrong order of calls!")
         self.__entries[category][title][prop] = value
 
+    def searchEntry(self, keyWord: str) -> dict[str, list[str]]:
+        """6th step: Search an entry with a given keyword and returns the found entry"""
+        result = {}
+        self.__ifSessionIsNotOpen("No session opened! Wrong order of calls!")
+        for category in self.__entries.keys():
+            for title in self.__entries[category].keys():
+                for prop in self.__entries[category][title].keys():
+                    if keyWord in self.__entries[category][title][prop] or keyWord in title or keyWord in category:
+                        if not category in result.keys():
+                            result[category] = []
+                        if not title in result[category]:
+                            result[category].append(title)
+        return result
+
     def remEntry(self, category: str, title: str) -> None:
         self.__ifSessionIsNotOpen("No session opened! Wrong order of calls!")
         del self.__entries[category][title]

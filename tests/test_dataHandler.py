@@ -93,33 +93,42 @@ class TestDataHandler(TestCaseBase):
 		self.assertIn(self.TITLE1, self.dataHandler.getEntries(self.CATEGORY1))
 		self.assertIn(self.TITLE2, self.dataHandler.getEntries(self.CATEGORY1))
 
-	def test_12_remEntry(self):
+	def test_12_searchEntry(self):
+		self.assertIn(self.TITLE1, self.dataHandler.searchEntry(self.CATEGORY1)[self.CATEGORY1])
+		self.assertIn(self.TITLE1, self.dataHandler.searchEntry(self.TITLE1)[self.CATEGORY1])
+		self.assertIn(self.TITLE1, self.dataHandler.searchEntry(self.NAME1)[self.CATEGORY1])
+		self.assertIn(self.TITLE1, self.dataHandler.searchEntry(self.PASS1)[self.CATEGORY1])
+		self.assertIn(self.TITLE1, self.dataHandler.searchEntry(self.URL1)[self.CATEGORY1])
+		self.assertIn(self.TITLE1, self.dataHandler.searchEntry(self.NOTICES1)[self.CATEGORY1])
+		self.assertIn(self.TITLE1, self.dataHandler.searchEntry(self.TIMESTAMP1)[self.CATEGORY1])
+
+	def test_13_remEntry(self):
 		self.dataHandler.remEntry(self.CATEGORY1, self.TITLE2)
 		self.assertIn(self.TITLE1, self.dataHandler.getEntries(self.CATEGORY1))
 		self.assertNotIn(self.TITLE2, self.dataHandler.getEntries(self.CATEGORY1))
 
-	def test_13_getEntry(self):
+	def test_14_getEntry(self):
 		self.assertEqual(self.ENTRY1, self.dataHandler.getEntry(self.CATEGORY1, self.TITLE1))
 
-	def test_14_changeEntry(self):
+	def test_15_changeEntry(self):
 		self.dataHandler.changeEntry(self.CATEGORY1, self.TITLE1, "password", self.PASS2)
 		self.assertNotEqual(self.ENTRY1, self.dataHandler.getEntry(self.CATEGORY1, self.TITLE1))
 		self.dataHandler.changeEntry(self.CATEGORY1, self.TITLE1, "password", self.PASS1)
 		self.assertEqual(self.ENTRY1, self.dataHandler.getEntry(self.CATEGORY1, self.TITLE1))
 
-	def test_15_addOldPassword(self):
+	def test_16_addOldPassword(self):
 		self.dataHandler.addOldPassword(self.PASS1)
 
-	def test_16_getOldPasswords(self):
+	def test_17_getOldPasswords(self):
 		self.assertIn(self.PASS1, self.dataHandler.getOldPasswords())
 		for i in range(10):
 			self.dataHandler.addOldPassword(self.PASS2)
 		self.assertNotIn(self.PASS1, self.dataHandler.getOldPasswords())
 
-	def test_17_closeSession(self):
+	def test_18_closeSession(self):
 		self.dataHandler.closeSession()
 
-	def test_18_remUser(self):
+	def test_19_remUser(self):
 		self.dataHandler.openFile(self.FILE)
 		self.cryptor.isCorrectKey(self.KEY1, self.dataHandler.getKey(self.USER1))
 		self.dataHandler.startSession()

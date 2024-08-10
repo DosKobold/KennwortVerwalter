@@ -44,6 +44,7 @@ if __name__ == "__main__":
             dataHandler.addEntry("EgCategory", "Youtube", "benHD89", "hund78", "youtube.com", "Youtube is klasse", "2024-07-28")
             #dataHandler.addEntry("EgCategory", "Youtube", "benHD89", "hund78", "youtube.com", "Youtube is klasse", "2024-07-28")
             dataHandler.changeEntry("EgCategory", "Youtube", "name", "geänderter name")
+            print(dataHandler.searchEntry("Youtube"))
             dataHandler.closeSession() #Data will be encrypted and written to disk #IMPORTANT CALL
     except FileNotFoundError:
         print("File not found!")
