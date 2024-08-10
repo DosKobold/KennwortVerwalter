@@ -17,12 +17,12 @@ class DataHandler:
     __user: str
     __entries: dict[str, dict[str, dict[str, str]]]
     __oldPasswords: list[str]
-    __cryptor: cryptor.Cryptor()
+    __cryptor: cryptor.Cryptor
     __sessionIsOpen = False
     __fileIsOpen = False
     __keyIsSet = False
 
-    def __init__(self, otherCryptor: cryptor.Cryptor()) -> None:
+    def __init__(self, otherCryptor: cryptor.Cryptor) -> None:
         self.__cryptor = otherCryptor
 
     def __ifSessionIsNotOpen(self, msg: str) -> None:
@@ -163,7 +163,7 @@ class DataHandler:
     def getEntries(self, category: str) -> list[str]:
         """6th step: get all entries of one category"""
         self.__ifSessionIsNotOpen("No session opened! Wrong order of calls!")
-        return self.__entries[category].keys()
+        return list(self.__entries[category].keys())
 
     def getEntry(self, category: str, title: str) -> dict[str, str]:
         self.__ifSessionIsNotOpen("No session opened! Wrong order of calls!")
@@ -204,22 +204,22 @@ class DataHandler:
             del self.__oldPasswords[0]
 
 ### TODO DEVELOPMENT AREA TO BE REMOVED ###
-if __name__ == "__main__":
-    print("--- Dev test of Datahandler ---")
+#if __name__ == "__main__":
+#    print("--- Dev test of Datahandler ---")
 
-    cryptor = cryptor.Cryptor()
-    dataHandler = DataHandler(cryptor)
-    dataHandler.createFile("autoCreated.kwv", "Paul", "dfgfjhfgs3432rwsfw")
-    dataHandler.openFile("autoCreated.kwv")
-    print(dataHandler.getUsers())
-    dataHandler.addUser("Dieter", "myKey")
-    dataHandler.addUser("Hans", "hisKey")
-    dataHandler.remUser("Dieter")
-    print(dataHandler.getKey("Paul"))
-    print(dataHandler.getEncryptedData())
-    print(dataHandler.setDecryptedData("{\"entries\":{\"EgCategory\":[{\"title\":\"Example\",\"name\":\"Example\",\"password\":\"Example\",\"url\":\"Example\",\"notices\":\"Example\",\"timestamp\":\"Example\"}]},\"oldPasswords\":[\"Example\",\"Example2\"]}"))
-    print(dataHandler.getDecryptedData())
-    dataHandler.closeFile(dataHandler.getDecryptedData())
+#    cryptor = cryptor.Cryptor()
+#    dataHandler = DataHandler(cryptor)
+#    dataHandler.createFile("autoCreated.kwv", "Paul", "dfgfjhfgs3432rwsfw")
+#    dataHandler.openFile("autoCreated.kwv")
+#    print(dataHandler.getUsers())
+#    dataHandler.addUser("Dieter", "myKey")
+#    dataHandler.addUser("Hans", "hisKey")
+#    dataHandler.remUser("Dieter")
+#    print(dataHandler.getKey("Paul"))
+#    print(dataHandler.getEncryptedData())
+#    print(dataHandler.setDecryptedData("{\"entries\":{\"EgCategory\":[{\"title\":\"Example\",\"name\":\"Example\",\"password\":\"Example\",\"url\":\"Example\",\"notices\":\"Example\",\"timestamp\":\"Example\"}]},\"oldPasswords\":[\"Example\",\"Example2\"]}"))
+#    print(dataHandler.getDecryptedData())
+#    dataHandler.closeFile(dataHandler.getDecryptedData())
 
-    print("-------------------------------")
+#    print("-------------------------------")
 ###########################################

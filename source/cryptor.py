@@ -134,7 +134,7 @@ class Cryptor:
         sha1 = str(hashlib.sha1(text.encode("utf-8")).hexdigest()).upper()
 
         try:
-            response = requests.get(url + sha1[:5])
+            response = requests.get(url + sha1[:5], timeout=5) #TODO Timeout needed
             if response.status_code == 200:
                 for line in response.text.splitlines():
                     if sha1[5:] in line:
@@ -142,7 +142,8 @@ class Cryptor:
                         message += "Password is well known|"
             else:
                 print(f"[Cryptor] WARNING: Can not reach \"{url}\"! Status code: {response.status_code}")
-        except Exception:
+        #The API call is not important -> All exceptions are catched and the user is informed
+        except Exception: #pylint: disable=broad-exception-caught
             message += "Check with API \"" + url + "\" failed - Maybe there is no internet connection"
 
         message = message[:-1].replace("|", ", ")
@@ -151,38 +152,38 @@ class Cryptor:
 
 
 ### TODO DEVELOPMENT AREA TO BE REMOVED ###
-#if __name__ == "__main__":
- #   print("--- Dev test of cryptor ---")
+if __name__ == "__main__":
+    print("--- Dev test of cryptor ---")
 
- #   cryptor = Cryptor()
+    cryptor = Cryptor()
 
- #   PASSWORD = "Test123"
- #   print("Password: " + PASSWORD)
+    PASSWORD = "Test123"
+    print("Password: " + PASSWORD)
 
- #   HASHED_PASSWORD = cryptor.hashKey(PASSWORD, True)
- #   print("Hashed password: " + HASHED_PASSWORD)
+    HASHED_PASSWORD = cryptor.hashKey(PASSWORD, True)
+    print("Hashed password: " + HASHED_PASSWORD)
 
- #   OTHER_PASSWORD = "Test123a"
- #   print("Other password: " + OTHER_PASSWORD)
+    OTHER_PASSWORD = "Test123a"
+    print("Other password: " + OTHER_PASSWORD)
 
- #   IS_CORRECT = cryptor.isCorrectKey(OTHER_PASSWORD, HASHED_PASSWORD)
- #   print("Is other password = hash? " + str(IS_CORRECT))
+    IS_CORRECT = cryptor.isCorrectKey(OTHER_PASSWORD, HASHED_PASSWORD)
+    print("Is other password = hash? " + str(IS_CORRECT))
 
- #   TEXT = "Hallo, ich bins!\n Wer bist du?"
- #   print("Text: " + TEXT)
+    TEXT = "Hallo, ich bins!\n Wer bist du?"
+    print("Text: " + TEXT)
 
- #   ENCRYPTED_TEXT = cryptor.encryptText(TEXT)
- #   print("Encrypted text: " + ENCRYPTED_TEXT)
+    ENCRYPTED_TEXT = cryptor.encryptText(TEXT)
+    print("Encrypted text: " + ENCRYPTED_TEXT)
 
- #   DECRYPTED_TEXT = cryptor.decryptText(ENCRYPTED_TEXT)
- #   print("Decrypted text: " + DECRYPTED_TEXT)
+    DECRYPTED_TEXT = cryptor.decryptText(ENCRYPTED_TEXT)
+    print("Decrypted text: " + DECRYPTED_TEXT)
 
- #   NEW_PASSWORD = cryptor.genPassword(300, False, False, False, False, "")
- #   print("New password: " +  NEW_PASSWORD)
+    NEW_PASSWORD = cryptor.genPassword(300, False, False, False, False, "")
+    print("New password: " +  NEW_PASSWORD)
 
- #   IS_SAFE = cryptor.isSafe(NEW_PASSWORD)
- #   print("Is new password safe? " + str(IS_SAFE[0]))
- #   print("\tReason(s): " + str(IS_SAFE[1]))
+    IS_SAFE = cryptor.isSafe(NEW_PASSWORD)
+    print("Is new password safe? " + str(IS_SAFE[0]))
+    print("\tReason(s): " + str(IS_SAFE[1]))
 
- #   print("---------------------------")
+    print("---------------------------")
 ###########################################
