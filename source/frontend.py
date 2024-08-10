@@ -16,10 +16,10 @@ from typing import Any, List
 
 class Frontend:
     __screen: Any
-    data_handler: DataHandler
+    dataHandler: DataHandler
 
-    def __init__(self, data_handler: DataHandler) -> None:
-        self.data_handler = data_handler
+    def __init__(self, dataHandler: DataHandler) -> None:
+        self.dataHandler = dataHandler
 
     # Initialize terminal screen.
     def __initTerm(self) -> None:
@@ -106,9 +106,9 @@ class Frontend:
 
     def ensure_default_category(self) -> None:
         """Ensure that the default category exists."""
-        categories = self.data_handler.getCategories()
+        categories = self.dataHandler.getCategories()
         if "default" not in categories:
-            self.data_handler.addCategory("default")
+            self.dataHandler.addCategory("default")
 
     def add_entry(self, stdscr: Any) -> None:
         curses.curs_set(1)
@@ -131,7 +131,7 @@ class Frontend:
 
         self.ensure_default_category()
 
-        self.data_handler.addEntry("default", title, username, password, url, notes, timestamp)
+        self.dataHandler.addEntry("default", title, username, password, url, notes, timestamp)
 
         stdscr.addstr(8, 0, "Entry added! Press any key to return to the main menu.")
         stdscr.getch()
@@ -178,7 +178,7 @@ class Frontend:
 
         self.ensure_default_category()
 
-        entries = self.data_handler.getEntries("default")
+        entries = self.dataHandler.getEntries("default")
 
         for idx, entry in enumerate(entries):
             if isinstance(entry, dict):
@@ -199,7 +199,7 @@ class Frontend:
         self.ensure_default_category()
 
         # Einträge in der "default"-Kategorie abrufen
-        entries = self.data_handler.getEntries("default")
+        entries = self.dataHandler.getEntries("default")
 
         # Falls keine Einträge vorhanden sind, Benutzer informieren und zurückkehren
         if not entries:
@@ -225,7 +225,7 @@ class Frontend:
         value = self.get_input(stdscr, 7 + len(entries), 0)
 
         # Aktualisierung des Eintrags
-        self.data_handler.changeEntry("default", selected_entry['title'], prop, value)
+        self.dataHandler.changeEntry("default", selected_entry['title'], prop, value)
 
         stdscr.addstr(9 + len(entries), 0, "Entry updated! Press any key to return to the main menu.")
         stdscr.getch()
@@ -242,7 +242,7 @@ class Frontend:
 
         self.ensure_default_category()
 
-        entries = self.data_handler.getEntries("default")
+        entries = self.dataHandler.getEntries("default")
 
         for idx, entry in enumerate(entries):
             if isinstance(entry, dict) and "title" in entry and entry["title"] == title:
@@ -258,7 +258,7 @@ def main() -> None:
     print("Cryptor initialized.")
     
     print("Initializing DataHandler...")
-    data_handler = DataHandler(cryptor)
+    dataHandler = DataHandler(cryptor)
     print("DataHandler initialized.")
     
     # Dateiname
@@ -271,25 +271,25 @@ def main() -> None:
     
     print(f"{file_name} does not exist. Creating file...")
     # Datei erstellen mit einem Beispielbenutzer und einem Beispielpasswort
-    data_handler.createFile(file_name, "paul", cryptor.hashKey("test123", True))
+    dataHandler.createFile(file_name, "paul", cryptor.hashKey("test123", True))
     print(f"File {file_name} created.")
     
     print(f"Opening file {file_name}...")
-    data_handler.openFile(file_name)
+    dataHandler.openFile(file_name)
     print(f"File {file_name} opened.")
     
     master_password = getpass.getpass("Enter your master password: ")
     print("Master password entered.")
     
-    if cryptor.isCorrectKey(master_password, data_handler.getKey("paul")):
+    if cryptor.isCorrectKey(master_password, dataHandler.getKey("paul")):
         print("Master password is correct.")
-        data_handler.startSession()
+        dataHandler.startSession()
         print("Session started.")
         
-        frontend = Frontend(data_handler)
+        frontend = Frontend(dataHandler)
         curses.wrapper(frontend.main_menu)
         
-        data_handler.closeSession()
+        dataHandler.closeSession()
         print("Session closed.")
     else:
         print("Incorrect master password.")
