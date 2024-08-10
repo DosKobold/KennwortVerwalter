@@ -134,7 +134,7 @@ class Cryptor:
         sha1 = str(hashlib.sha1(text.encode("utf-8")).hexdigest()).upper()
 
         try:
-            response = requests.get(url + sha1[:5], timeout=5) #TODO Timeout needed
+            response = requests.get(url + sha1[:5], timeout=5)
             if response.status_code == 200:
                 for line in response.text.splitlines():
                     if sha1[5:] in line:
