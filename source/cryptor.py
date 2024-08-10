@@ -19,7 +19,8 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 class Cryptor:
     """Class for crypting and hashing"""
 
-    __fernet = None
+    def __init__(self) -> None:
+        self.__fernet = None
 
     def __setMasterKey(self, key: str) -> None:
         salt = "IamSalty_asThIs!Pr0jEcT".encode("utf-8")

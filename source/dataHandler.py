@@ -13,17 +13,16 @@ import objectAlreadyExistsException
 class DataHandler:
     """Class for handling data"""
 
-    __path: str
-    __user: str
-    __entries: dict[str, dict[str, dict[str, str]]]
-    __oldPasswords: list[str]
-    __cryptor: cryptor.Cryptor
-    __sessionIsOpen = False
-    __fileIsOpen = False
-    __keyIsSet = False
-
     def __init__(self, otherCryptor: cryptor.Cryptor) -> None:
         self.__cryptor = otherCryptor
+        self.__path: str
+        self.__user: str
+        self.__entries: dict[str, dict[str, dict[str, str]]]
+        self.__oldPasswords: list[str]
+        self.__cryptor: cryptor.Cryptor
+        self.__sessionIsOpen = False
+        self.__fileIsOpen = False
+        self.__keyIsSet = False
 
     def __ifSessionIsNotOpen(self, msg: str) -> None:
         if self.__sessionIsOpen is False:

@@ -8,10 +8,7 @@ export PYTHONPATH='source/'
 
 echo "Choosen folder for source code: $PYTHONPATH"
 
-/bin/python3-coverage run -m unittest -v tests/test_cryptor.py
-#FIXME Doesn't work proberly: We have to run all tests in one run to receive correct test results
-/bin/python3-coverage run -m unittest -v tests/test_dataHandler.py
-
+/bin/python3-coverage run -m unittest discover -v
 
 /bin/python3-coverage report
 
