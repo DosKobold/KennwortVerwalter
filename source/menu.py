@@ -4,12 +4,6 @@ import curses
 from curses import panel
 
 class Menu:
-
-    __items    = None
-    __window   = None
-    __panel    = None
-    __position = None
-
     def __init__(self, items, screen):
         self.__window = screen.subwin(0, 0)
         self.__window.keypad(1)
