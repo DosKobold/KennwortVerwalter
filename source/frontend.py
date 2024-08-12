@@ -138,32 +138,32 @@ class Frontend:
 
     def get_input(self, stdscr: Any, y: int, x: int) -> str:
         curses.noecho()
-        win = curses.newwin(1, 30, y, x)
+        max_width = 100000 
+        win = curses.newwin(1, max_width, y, x) 
         win.keypad(True)
         curses.curs_set(1)
         box: List[str] = []
-        pos = 0  # Cursor-Position
-
+        
         while True:
-            key = win.getch()
-
-            if key in (curses.KEY_ENTER, 10, 13):  # Enter key
+            key = win.get_wch()
+            
+            if isinstance(key, str) and key in ("\n", "\r"):  # Enter-Taste
                 break
-            elif key in (curses.KEY_BACKSPACE, 8, 127):  # Backspace key
-                if pos > 0:
-                    pos -= 1  # Bewegt die Cursor-Position nach links
-                    box.pop(pos)  # Entfernt das Zeichen an der aktuellen Position
-                    win.move(0, 0)
-                    win.clrtoeol()  # Löscht die Zeile, um sicherzustellen, dass das Zeichen entfernt wird
-                    win.addstr(0, 0, ''.join(box))  # Zeigt die verbleibenden Zeichen an
-                    win.move(0, pos)  # Bewegt den Cursor zurück an die richtige Position
-            elif 32 <= key <= 126:  # Zeichenbare Zeichen
-                if len(box) < 30:  # Sicherstellen, dass wir die Fensterbreite nicht überschreiten
-                    box.insert(pos, chr(key))  # Fügt das Zeichen an der aktuellen Position hinzu
-                    pos += 1  # Bewegt die Cursor-Position nach rechts
-                    win.clear()  # Löscht das Eingabefeld
-                    win.addstr(0, 0, ''.join(box))  # Zeigt die aktuelle Eingabe an
-                    win.move(0, pos)  # Setzt den Cursor an die neue Position
+
+            elif key == 263:  # Backspace-Taste
+                if len(box) > 0:
+                    box.pop()  
+                    win.clear()  
+                    win.addstr(0, 0, ''.join(box))  
+                    win.move(0, len(box)) 
+
+            elif isinstance(key, str) and key.isprintable():  # Zeichenbare Zeichen
+                box.append(key)  
+
+            display_text = ''.join(box[-30:])  # Zeigt nur die letzten 30 Zeichen an
+            win.clear()
+            win.addstr(0, 0, display_text)
+            win.move(0, len(display_text))
 
             win.refresh()
 
