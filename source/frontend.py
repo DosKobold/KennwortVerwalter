@@ -174,11 +174,13 @@ class Frontend:
         curses.curs_set(0)
         stdscr.clear()
         stdscr.refresh()
-        stdscr.addstr(0, 0, "View Entries")
+        stdscr.addstr(6, 0, "View Entries")
 
         self.ensure_default_category()
 
         entries = self.dataHandler.getEntries("default")
+
+        stdscr.addstr(4, 10, "search")
 
         for idx, entry in enumerate(entries):
             if isinstance(entry, dict):
@@ -211,7 +213,8 @@ class Frontend:
         # Die Liste der Einträge anzeigen
         stdscr.addstr(2, 0, "Select an entry to edit:")
         for idx, entry in enumerate(entries):
-            stdscr.addstr(3 + idx, 0, f"{idx + 1}. {entry['title']}")
+            if isinstance(entry, dict):
+                stdscr.addstr(3 + idx, 0, f"{idx + 1}. {entry['title']}")
 
         # Benutzer wählt einen Eintrag aus
         selected_index = int(self.get_input(stdscr, 3 + len(entries), 0)) - 1
