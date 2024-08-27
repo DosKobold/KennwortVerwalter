@@ -138,7 +138,7 @@ class Frontend:
 
     def get_input(self, stdscr: Any, y: int, x: int) -> str:
         curses.noecho()
-        max_width = 100000 
+        max_width = curses.COLS
         win = curses.newwin(1, max_width, y, x) 
         win.keypad(True)
         curses.curs_set(1)
@@ -174,13 +174,13 @@ class Frontend:
         curses.curs_set(0)
         stdscr.clear()
         stdscr.refresh()
-        stdscr.addstr(6, 0, "View Entries")
+        # stdscr.addstr(6, 0, "View Entries")
 
         self.ensure_default_category()
 
         entries = self.dataHandler.getEntries("default")
 
-        stdscr.addstr(4, 10, "search")
+        stdscr.addstr(4, 10, "search: ")
 
         for idx, entry in enumerate(entries):
             if isinstance(entry, dict):
@@ -188,7 +188,7 @@ class Frontend:
             else:
                 stdscr.addstr(2 + idx, 0, f"{idx + 1}. {entry}")
 
-        stdscr.addstr(len(entries) + 2, 0, "Press any key to return to the main menu.")
+        stdscr.addstr(len(entries) + 8, 0, "Press any key to return to the main menu.")
         stdscr.getch()
 
     def edit_entry(self, stdscr: Any) -> None:
