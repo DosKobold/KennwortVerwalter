@@ -5,8 +5,8 @@ import curses
 class Popup:
     def __init__(self, screen: curses.window) -> None:
         self.screen = screen
-        self.height = CURSES.LINES
-        self.width  = CURSES.COLS
+        self.height = curses.LINES
+        self.width  = curses.COLS
 
     def display_text(self, text: str) -> None:
         screen_height, screen_width = self.screen.getmaxyx()
