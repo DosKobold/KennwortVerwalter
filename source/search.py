@@ -19,7 +19,7 @@ class SearchBar:
             self.filter_items()
             self.display_results()
 
-            key = self.screen.getch()
+            key = self.__screen.getch()
 
             if key in (curses.KEY_EXIT, 27):
                 break
@@ -33,25 +33,25 @@ class SearchBar:
                 self.__query += chr(key)
 
     def draw_search_bar(self):
-        self.screen.addstr(0, 0, "Search: " + self.__query)
-        self.screen.refresh()
+        self.__screen.addstr(0, 0, "Search: " + self.__query)
+        self.__screen.refresh()
 
     def filter_items(self):
         self.filtered_items = [item for item in self.__items if self.__query.lower() in item.lower()]
 
     def display_results(self):
-        max_height, max_width = self.screen.getmaxyx()
+        max_height, max_width = self.__screen.getmaxyx()
         for idx, item in enumerate(self.filtered_items[:max_height - 2]):
-            self.screen.addstr(idx + 2, 0, item[:max_width - 1])
-        self.screen.refresh()
+            self.__screen.addstr(idx + 2, 0, item[:max_width - 1])
+        self.__screen.refresh()
 
     def handle_selection(self):
         if self.filtered_items:
             selected_item = self.filtered_items[0]
-            self.screen.clear()
-            self.screen.addstr(0, 0, f"Selected: {selected_item}")
-            self.screen.refresh()
-            self.screen.getch()
+            self.__screen.clear()
+            self.__screen.addstr(0, 0, f"Selected: {selected_item}")
+            self.__screen.refresh()
+            self.__screen.getch()
 
 # ATTENTION: 
 # ------

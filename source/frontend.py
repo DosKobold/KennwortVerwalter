@@ -11,6 +11,7 @@ import curses.textpad
 import os  # Hinzufügen des Imports für das os-Modul
 import getpass  # Hinzufügen des Imports für getpass
 from dataHandler import DataHandler
+from search import SearchBar
 from cryptor import Cryptor
 from typing import Any, List
 
@@ -181,6 +182,12 @@ class Frontend:
         entries = self.dataHandler.getEntries("default")
 
         stdscr.addstr(4, 10, "search: ")
+        items = [
+            "Apple", "Banana", "Orange", "Grapes", "Watermelon", "Pineapple",
+            "Strawberry", "Blueberry", "Raspberry", "Mango", "Papaya", "Lemon"
+        ]
+        search_bar = SearchBar(stdscr, items)
+        search_bar.display()
 
         for idx, entry in enumerate(entries):
             if isinstance(entry, dict):
