@@ -1,7 +1,8 @@
 #!/bin/python3
 """
 File: datahandler.py
-Desc: Implements a simple interface for the main.
+Desc: Implements a simple interface for datahandling. Handles files, its content and the processed
+      data.
 """
 
 import sys
@@ -19,7 +20,6 @@ class DataHandler:
         self.__user: str
         self.__entries: dict[str, dict[str, dict[str, str]]]
         self.__oldPasswords: list[str]
-        self.__cryptor: cryptor.Cryptor
         self.__sessionIsOpen = False
         self.__fileIsOpen = False
         self.__keyIsSet = False
@@ -47,7 +47,7 @@ class DataHandler:
         with open(path, "w", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=",")
             writer.writerow(["account", "key", "data"])
-            writer.writerow([user.replace(',',''), key, self.__cryptor.encryptText("{\"entries\":{\"EgCategory\":{\"Example\":{\"name\":\"Example\",\"password\":\"Example\",\"url\":\"Example\",\"notices\":\"Example\",\"timestamp\":\"Example\"}}},\"oldPasswords\":[\"Example\",\"Example2\"]}")])
+            writer.writerow([user.replace(',',''), key, self.__cryptor.encryptText("{\"entries\":{},\"oldPasswords\":[]}")])
 
     def openFile(self, path: str,) -> None:
         """1st step: open a file"""
@@ -108,7 +108,7 @@ class DataHandler:
             raise objectAlreadyExistsException.ObjectAlreadyExistsException
         with open(self.__path, "a", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=",")
-            writer.writerow([user.replace(',',''), key, self.__cryptor.encryptText("{\"entries\":{\"EgCategory\":{\"title\":{\"Example\",\"name\":\"Example\",\"password\":\"Example\",\"url\":\"Example\",\"notices\":\"Example\",\"timestamp\":\"Example\"}}},\"oldPasswords\":[\"Example\",\"Example2\"]}")])
+            writer.writerow([user.replace(',',''), key, self.__cryptor.encryptText("{\"entries\":{},\"oldPasswords\":[]}")])
 
     def remUser(self) -> None:
         """6th step: remove the choosen user"""
@@ -188,13 +188,14 @@ class DataHandler:
 
     def searchEntry(self, keyWord: str) -> dict[str, list[str]]:
         """6th step: Search an entry with a given keyword and returns the found entry"""
-        result = {}
+        result: dict[str, list[str]] = {}
         self.__ifSessionIsNotOpen("No session opened! Wrong order of calls!")
         for category in self.__entries.keys():
             for title in self.__entries[category].keys():
                 for prop in self.__entries[category][title].keys():
                     if keyWord in self.__entries[category][title][prop] or keyWord in title or keyWord in category:
-                        if not category in result.keys():
+                        #Have to check keys, not values
+                        if not category in result.keys(): #pylint: disable=consider-iterating-dictionary
                             result[category] = []
                         if not title in result[category]:
                             result[category].append(title)
@@ -215,24 +216,3 @@ class DataHandler:
         self.__oldPasswords.append(oldPassword)
         if len(self.__oldPasswords) > 10:
             del self.__oldPasswords[0]
-
-### TODO DEVELOPMENT AREA TO BE REMOVED ###
-#if __name__ == "__main__":
-#    print("--- Dev test of Datahandler ---")
-
-#    cryptor = cryptor.Cryptor()
-#    dataHandler = DataHandler(cryptor)
-#    dataHandler.createFile("autoCreated.kwv", "Paul", "dfgfjhfgs3432rwsfw")
-#    dataHandler.openFile("autoCreated.kwv")
-#    print(dataHandler.getUsers())
-#    dataHandler.addUser("Dieter", "myKey")
-#    dataHandler.addUser("Hans", "hisKey")
-#    dataHandler.remUser("Dieter")
-#    print(dataHandler.getKey("Paul"))
-#    print(dataHandler.getEncryptedData())
-#    print(dataHandler.setDecryptedData("{\"entries\":{\"EgCategory\":[{\"title\":\"Example\",\"name\":\"Example\",\"password\":\"Example\",\"url\":\"Example\",\"notices\":\"Example\",\"timestamp\":\"Example\"}]},\"oldPasswords\":[\"Example\",\"Example2\"]}"))
-#    print(dataHandler.getDecryptedData())
-#    dataHandler.closeFile(dataHandler.getDecryptedData())
-
-#    print("-------------------------------")
-###########################################

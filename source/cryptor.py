@@ -1,9 +1,9 @@
 #!/bin/python3
 """
 File: cryptor.py
-Desc: Implements a simple interface for the Datahandler. En- and decrypts text with a masterkey.
-      Hashes a password to a masterkey. Checks if a password is the mastekey. Generates and checks
-      passwords. 
+Desc: Implements a simple interface for cryptography. En- and decrypts text with a masterkey.
+      Hashes a password to a masterkey. Checks if a password is the masterkey. Generates and 
+      checks passwords. 
 """
 
 import sys
@@ -20,7 +20,7 @@ class Cryptor:
     """Class for crypting and hashing"""
 
     def __init__(self) -> None:
-        self.__fernet = None
+        self.__fernet: Fernet
 
     def __setMasterKey(self, key: str) -> None:
         salt = "IamSalty_asThIs!Pr0jEcT".encode("utf-8")
@@ -149,42 +149,3 @@ class Cryptor:
 
         message = message[:-1].replace("|", ", ")
         return (isSecure, message)
-
-
-
-### TODO DEVELOPMENT AREA TO BE REMOVED ###
-if __name__ == "__main__":
-    print("--- Dev test of cryptor ---")
-
-    cryptor = Cryptor()
-
-    PASSWORD = "Test123"
-    print("Password: " + PASSWORD)
-
-    HASHED_PASSWORD = cryptor.hashKey(PASSWORD, True)
-    print("Hashed password: " + HASHED_PASSWORD)
-
-    OTHER_PASSWORD = "Test123a"
-    print("Other password: " + OTHER_PASSWORD)
-
-    IS_CORRECT = cryptor.isCorrectKey(OTHER_PASSWORD, HASHED_PASSWORD)
-    print("Is other password = hash? " + str(IS_CORRECT))
-
-    TEXT = "Hallo, ich bins!\n Wer bist du?"
-    print("Text: " + TEXT)
-
-    ENCRYPTED_TEXT = cryptor.encryptText(TEXT)
-    print("Encrypted text: " + ENCRYPTED_TEXT)
-
-    DECRYPTED_TEXT = cryptor.decryptText(ENCRYPTED_TEXT)
-    print("Decrypted text: " + DECRYPTED_TEXT)
-
-    NEW_PASSWORD = cryptor.genPassword(300, False, False, False, False, "")
-    print("New password: " +  NEW_PASSWORD)
-
-    IS_SAFE = cryptor.isSafe(NEW_PASSWORD)
-    print("Is new password safe? " + str(IS_SAFE[0]))
-    print("\tReason(s): " + str(IS_SAFE[1]))
-
-    print("---------------------------")
-###########################################
