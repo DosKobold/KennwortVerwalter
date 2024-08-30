@@ -57,7 +57,7 @@ class Cryptor:
             self.__wrongUsage()
 	#None has no attribute "encrypt" -> None is checked above
         token = self.__fernet.encrypt(text.encode("utf-8")) #type: ignore
-        return token.decode("utf-8")
+        return str(token.decode("utf-8"))
 
     def decryptText(self, text: str) -> str:
         """Decrypts a given text with the master key"""
@@ -65,7 +65,7 @@ class Cryptor:
             self.__wrongUsage()
 	#None has no attribute "decrypt" -> None is checked above
         token = self.__fernet.decrypt(text.encode("utf-8")) #type: ignore
-        return token.decode("utf-8")
+        return str(token.decode("utf-8"))
 
     def genPassword(self, length: int, digits: bool, others: bool, upper: bool, lower: bool, forbidden: str) -> str:
         """Generates a password with several options"""
