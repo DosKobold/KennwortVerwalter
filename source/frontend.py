@@ -501,51 +501,102 @@ class Frontend:
         self.__screen.addstr(curses.LINES - curses.LINES // 4, 0, "Press any key to return to the main menu.")
         self.__screen.getch()
 
+
+    def __ee_load_values(self, filename: str):
+        with open(filename, 'r') as file:
+            lines = file.readlines()
+            return [line.strip().split(',') for line in lines if line.strip()]
     
-    def edit_entry(self):
-        with open(self.__dataHandler._DataHandler__path, 'r') as file:
-            line = file.readline().strip()
-            values = line.split(',')
+    def __ee_save_values(self, filename: str, records):
+        with open(filename, 'w') as file:
+            for record in records:
+                file.write(','.join(record) + '\n')
+    
+    def __ee_edit_fields(self, record):
         current_field = 0
         max_fields = 3
-        field_lengths = [max(20, len(value)) for value in values]
         curses.curs_set(1)
     
         while True:
             self.__screen.clear()
             max_height, max_width = self.__screen.getmaxyx()
+    
+            # Display the fields
             for i in range(max_fields):
                 self.__screen.addstr(i, 0, f"Field {i + 1}: ")
                 if current_field == i:
                     self.__screen.attron(curses.A_REVERSE)
-                self.__screen.addstr(i, 10, values[i].ljust(field_lengths[i]))
+                self.__screen.addstr(i, 10, record[i].ljust(max_width - 20))
                 if current_field == i:
                     self.__screen.attroff(curses.A_REVERSE)
     
+            # Display the Save button
             save_button = "[ Save ]"
             self.__screen.addstr(max_fields + 1, (max_width - len(save_button)) // 2, save_button)
+    
             key = self.__screen.getch()
+    
             if key in (curses.KEY_ENTER, 10, 13):
                 if current_field < max_fields:
                     current_field += 1
                 else:
-                    with open(self.__dataHandler._DataHandler__path, 'w') as file:
-                        file.write(','.join(values))
-                    break
+                    break  # Exit to save changes
             elif key == curses.KEY_BACKSPACE or key == 127:
-                if len(values[current_field]) > 0:
-                    values[current_field] = values[current_field][:-1]
+                if len(record[current_field]) > 0:
+                    record[current_field] = record[current_field][:-1]
             elif key in (curses.KEY_UP, curses.KEY_DOWN):
                 if key == curses.KEY_UP and current_field > 0:
                     current_field -= 1
                 elif key == curses.KEY_DOWN and current_field < max_fields:
                     current_field += 1
-            elif key == 27:
-                break
-            elif 0 <= key <= 255 and current_field < max_fields:
-                values[current_field] += chr(key)
+            elif key == 27:  # ESC key to exit without saving
+                return None
+            elif 0 <= key <= 255 and current_field < max_fields:  # Handle normal character input
+                record[current_field] += chr(key)
     
             self.__screen.refresh()
+    
+        return record
+    
+    def __ee_select_record(self, records):
+        current_selection = 0
+        curses.curs_set(0)
+    
+        while True:
+            self.__screen.clear()
+            max_height, max_width = self.__screen.getmaxyx()
+    
+            # Display the list of first fields
+            for idx, record in enumerate(records):
+                if idx == current_selection:
+                    self.__screen.attron(curses.A_REVERSE)
+                self.__screen.addstr(idx, 0, record[0].ljust(max_width - 1))
+                if idx == current_selection:
+                    self.__screen.attroff(curses.A_REVERSE)
+    
+            key = self.__screen.getch()
+    
+            if key in (curses.KEY_ENTER, 10, 13):
+                return current_selection
+            elif key == curses.KEY_UP and current_selection > 0:
+                current_selection -= 1
+            elif key == curses.KEY_DOWN and current_selection < len(records) - 1:
+                current_selection += 1
+            elif key == 27:  # ESC key to exit
+                return None
+    
+            self.__screen.refresh()
+    
+    def edit_entry(self) -> None:
+        records = self.__ee_load_values(self.__dataHandler._DataHandler__path)
+        while True:
+            idx = self.__ee_select_record(records)
+            if idx is None:
+                break
+            edited = self.__ee_edit_fields(records[idx])
+            if edited:
+                records[idx] = edited
+                self.__ee_save_values(self.__dataHandler._DataHandler__path, records)
 
     def delete_entry(self) -> None:
             curses.curs_set(0)
