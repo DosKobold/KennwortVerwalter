@@ -9,10 +9,13 @@ Desc: Implements the terminal based user interface to the application.
 import curses
 import curses.textpad
 import os
+import time
+import datetime
+import json
+import csv
 from dataHandler import DataHandler
 from search import SearchBar
 from cryptor import Cryptor
-import time
 
 class Frontend:
     __screen: curses.window
@@ -198,29 +201,87 @@ class Frontend:
             self.__dataHandler.addCategory("default")
 
     def add_entry(self) -> None:
-        curses.curs_set(1)
-        self.__screen.clear()
-        self.__screen.refresh()
-
-        fields = [("Title: ", 2, 0), ("Username: ", 3, 0), ("Password: ", 4, 0),
-                  ("URL: ", 5, 0), ("Notes: ", 6, 0)]
-        inputs: list[str] = []
-
-        for field, y, x in fields:
-            self.__screen.addstr(y, x, field)
+            curses.curs_set(0)
+            self.__screen.clear()
             self.__screen.refresh()
-            input_value = self.get_input(y, x + len(field))
-            inputs.append(input_value)
-
-        title, username, password, url, notes = inputs
-        timestamp = "2024-07-28"
-
-        self.ensure_default_category()
-
-        self.__dataHandler.addEntry("default", title, username, password, url, notes, timestamp)
-
-        self.__screen.addstr(8, 0, "Entry added! Press any key to return to the main menu.")
-        self.__screen.getch()
+    
+            # Kategorien anzeigen und auswählen
+            self.__screen.addstr(0, 0, "Select a category or create a new one:")
+            categories = self.__dataHandler.getCategories()
+            categories.append("Create New Category")
+            current_selection = 0
+    
+            while True:
+                self.__screen.clear()
+                self.__screen.addstr(0, 0, "Select a category or create a new one:")
+                
+                # Kategorienliste anzeigen
+                for idx, category in enumerate(categories):
+                    x = curses.COLS // 2 - len(category) // 2
+                    y = 2 + idx
+                    if idx == current_selection:
+                        self.__screen.attron(curses.A_REVERSE)
+                        self.__screen.addstr(y, x, category)
+                        self.__screen.attroff(curses.A_REVERSE)
+                    else:
+                        self.__screen.addstr(y, x, category)
+                
+                key = self.__screen.getch()
+                
+                if key == curses.KEY_UP and current_selection > 0:
+                    current_selection -= 1
+                elif key == curses.KEY_DOWN and current_selection < len(categories) - 1:
+                    current_selection += 1
+                elif key in (curses.KEY_ENTER, 10, 13):
+                    if current_selection == len(categories) - 1:  # "Create New Category" ausgewählt
+                        self.__screen.clear()
+                        self.__screen.refresh()
+                        self.__screen.addstr(0, 0, "Enter new category name: ")
+                        self.__screen.refresh()
+                        new_category = self.get_input(0, len("Enter new category name: "))
+                        if new_category:
+                            self.__dataHandler.addCategory(new_category)
+                            selected_category = new_category
+                        else:
+                            self.__screen.addstr(2, 0, "Invalid category name! Press any key to try again.")
+                            self.__screen.getch()
+                            continue
+                    else:  # Existierende Kategorie ausgewählt
+                        selected_category = categories[current_selection]
+                    break
+    
+                self.__screen.refresh()
+    
+            # Bildschirm für die Eintragsdetails bereinigen und vorbereiten
+            self.__screen.clear()
+            self.__screen.refresh()
+    
+            fields = [("Title: ", 2, 0), ("Username: ", 3, 0), ("Password: ", 4, 0),
+                    ("URL: ", 5, 0), ("Notes: ", 6, 0)]
+            inputs: list[str] = []
+    
+            for field, y, x in fields:
+                self.__screen.addstr(y, x, field)
+                self.__screen.refresh()
+                input_value = self.get_input(y, x + len(field))
+                inputs.append(input_value)
+    
+            title, username, password, url, notes = inputs
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+            # Überprüfung, ob alle notwendigen Felder ausgefüllt sind
+            if not title:
+                self.__screen.addstr(8, 0, "Title is required! Entry not saved. Press any key to return.")
+                self.__screen.getch()
+                return
+    
+            # Eintrag zur ausgewählten Kategorie hinzufügen
+            try:
+                self.__dataHandler.addEntry(selected_category, title, username, password, url, notes, timestamp)
+                self.__dataHandler.saveEntries()
+                self.__screen.addstr(8, 0, "Entry added successfully! Press any key to return to the main menu.")
+            except Exception as e:
+                self.__screen.addstr(8, 0, f"Failed to add entry: {str(e)}. Press any key to return.")
 
     def get_input(self, y: int, x: int, password: bool = False) -> str:
         curses.noecho()

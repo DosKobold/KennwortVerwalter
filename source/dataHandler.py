@@ -91,6 +91,19 @@ class DataHandler:
         self.__fileIsOpen = False
         self.__keyIsSet = False
 
+    def saveEntries(self) -> None:
+        data = self.__getFileContent()
+        for dictonary in data:
+            if dictonary["account"] == self.__user:
+                dictonary["data"] = self.__cryptor.encryptText(json.dumps({"entries":self.__entries, "oldPasswords":self.__oldPasswords}))
+                break
+        with open(self.__path, "w", encoding="utf-8") as file:
+            fieldnames = ["account", "key", "data"]
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            for dictonary in data:
+                writer.writerow(dictonary)
+
     def getUsers(self) -> list[str]:
         """2nd step: get all users"""
         self.__ifFileIsNotOpen("No file opened! Wrong order of calls!")
