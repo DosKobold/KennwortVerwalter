@@ -474,40 +474,105 @@ class Frontend:
         self.__screen.getch()
 
     def delete_entry(self) -> None:
-        curses.curs_set(1)
-        self.__screen.clear()
-        self.__screen.refresh()
-        self.__screen.addstr(0, 0, "Delete Entry")
-
-        # Eingabeaufforderung für den Eintragstitel
-        self.__screen.addstr(2, 0, "Enter entry title to delete: ")
-        self.__screen.refresh()
-        title = self.get_input(2, len("Enter entry title to delete: "))
-        
-        self.ensure_default_category()
-        entries = self.__dataHandler.getEntries("default")
-
-        # Überprüfen, ob der Eintrag existiert
-        if title in entries:
-            self.__screen.addstr(4, 0, f"Do you really want to delete '{title}'? Press 'y' to confirm or any other key to cancel.")
+            curses.curs_set(0)
+            self.__screen.clear()
+            self.__screen.refresh()
+    
+            # Kategorien anzeigen und auswählen
+            self.__screen.addstr(0, 0, "Select a category:")
+            categories = self.__dataHandler.getCategories()
+            if not categories:
+                self.__screen.addstr(2, 0, "No categories available. Press any key to return to the main menu.")
+                self.__screen.getch()
+                return
+    
+            current_selection = 0
+    
+            # Kategorie-Auswahlmenü
+            while True:
+                self.__screen.clear()
+                self.__screen.addstr(0, 0, "Select a category:")
+                
+                for idx, category in enumerate(categories):
+                    x = curses.COLS // 2 - len(category) // 2
+                    y = 2 + idx
+                    if idx == current_selection:
+                        self.__screen.attron(curses.A_REVERSE)
+                        self.__screen.addstr(y, x, category)
+                        self.__screen.attroff(curses.A_REVERSE)
+                    else:
+                        self.__screen.addstr(y, x, category)
+                
+                key = self.__screen.getch()
+                
+                if key == curses.KEY_UP and current_selection > 0:
+                    current_selection -= 1
+                elif key == curses.KEY_DOWN and current_selection < len(categories) - 1:
+                    current_selection += 1
+                elif key in (curses.KEY_ENTER, 10, 13):
+                    selected_category = categories[current_selection]
+                    break
+    
+                self.__screen.refresh()
+    
+            # Einträge der ausgewählten Kategorie anzeigen
+            self.__screen.clear()
+            self.__screen.refresh()
+            self.__screen.addstr(0, 0, f"Entries in '{selected_category}':")
+            entries = self.__dataHandler.getEntries(selected_category)
+            if not entries:
+                self.__screen.addstr(2, 0, "No entries found in this category. Press any key to return to the main menu.")
+                self.__screen.getch()
+                return
+    
+            current_entry_selection = 0
+    
+            # Eintrag-Auswahlmenü
+            while True:
+                self.__screen.clear()
+                self.__screen.addstr(0, 0, f"Entries in '{selected_category}':")
+                
+                for idx, entry in enumerate(entries):
+                    x = curses.COLS // 2 - len(entry) // 2
+                    y = 2 + idx
+                    if idx == current_entry_selection:
+                        self.__screen.attron(curses.A_REVERSE)
+                        self.__screen.addstr(y, x, entry)
+                        self.__screen.attroff(curses.A_REVERSE)
+                    else:
+                        self.__screen.addstr(y, x, entry)
+                
+                key = self.__screen.getch()
+                
+                if key == curses.KEY_UP and current_entry_selection > 0:
+                    current_entry_selection -= 1
+                elif key == curses.KEY_DOWN and current_entry_selection < len(entries) - 1:
+                    current_entry_selection += 1
+                elif key in (curses.KEY_ENTER, 10, 13):
+                    selected_entry = entries[current_entry_selection]
+                    break
+    
+                self.__screen.refresh()
+    
+            # Bestätigungsabfrage zur Löschung des ausgewählten Eintrags
+            self.__screen.clear()
+            self.__screen.addstr(0, 0, f"Do you really want to delete '{selected_entry}' from '{selected_category}'?")
+            self.__screen.addstr(1, 0, "Press 'y' to confirm or any other key to cancel.")
             self.__screen.refresh()
             choice = self.__screen.get_wch()
-
+    
             # Bestätigen, ob gelöscht werden soll
             if choice in ('y', 'Y'):
-                self.__dataHandler.remEntry("default", title)
+                self.__dataHandler.remEntry(selected_category, selected_entry)
                 self.__screen.clear()
                 self.__screen.addstr(0, 0, "Entry deleted! Press any key to return to the main menu.")
             else:
                 self.__screen.clear()
                 self.__screen.addstr(0, 0, "Deletion cancelled. Press any key to return to the main menu.")
-        else:
-            self.__screen.clear()
-            self.__screen.addstr(0, 0, f"Entry '{title}' not found. Press any key to return to the main menu.")
-
-        self.__screen.refresh()
-        self.__screen.getch()
-
+    
+            self.__screen.refresh()
+            self.__screen.getch()
+    
     def generate_password(self) -> None:
         curses.curs_set(1)
         self.__screen.clear()
