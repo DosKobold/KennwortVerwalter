@@ -142,8 +142,8 @@ class Frontend:
 
         current_row = 0
         menu: list[str] = [
-            'Add Entry', 'View Entries', 'Edit Entry', 'Delete Entry', 
-            'Delete Current User', 'Logout and Return to Login Screen', 'Exit'
+            'Add Entry', 'View Entries', 'Edit Entry', 'Delete Entry', 'Generate Password',
+            'Check Password Security', 'Delete Current User', 'Logout and Return to Login Screen', 'Exit'
         ]
 
         while True:
@@ -176,10 +176,14 @@ class Frontend:
                 elif current_row == 3:
                     self.delete_entry()
                 elif current_row == 4:
-                    self.delete_current_user()
+                    self.generate_password()
                 elif current_row == 5:
-                    self.back_to_login()
+                    self.check_password_security()
                 elif current_row == 6:
+                    self.delete_current_user()
+                elif current_row == 7:
+                    self.back_to_login()
+                elif current_row == 8:
                     self.resetTerm()
                     break
 
@@ -397,20 +401,124 @@ class Frontend:
         self.__screen.refresh()
         self.__screen.addstr(0, 0, "Delete Entry")
 
+        # Eingabeaufforderung für den Eintragstitel
         self.__screen.addstr(2, 0, "Enter entry title to delete: ")
-        title = self.get_input(2, 20)
-
+        self.__screen.refresh()
+        title = self.get_input(2, len("Enter entry title to delete: "))
+        
         self.ensure_default_category()
-
         entries = self.__dataHandler.getEntries("default")
 
-        for idx, entry in enumerate(entries):
-            if isinstance(entry, dict) and "title" in entry and entry["title"] == title:
-                entries.pop(idx)
-                break
+        # Überprüfen, ob der Eintrag existiert
+        if title in entries:
+            self.__screen.addstr(4, 0, f"Do you really want to delete '{title}'? Press 'y' to confirm or any other key to cancel.")
+            self.__screen.refresh()
+            choice = self.__screen.get_wch()
 
-        self.__screen.addstr(4, 0, "Entry deleted! Press any key to return to the main menu.")
+            # Bestätigen, ob gelöscht werden soll
+            if choice in ('y', 'Y'):
+                self.__dataHandler.remEntry("default", title)
+                self.__screen.clear()
+                self.__screen.addstr(0, 0, "Entry deleted! Press any key to return to the main menu.")
+            else:
+                self.__screen.clear()
+                self.__screen.addstr(0, 0, "Deletion cancelled. Press any key to return to the main menu.")
+        else:
+            self.__screen.clear()
+            self.__screen.addstr(0, 0, f"Entry '{title}' not found. Press any key to return to the main menu.")
+
+        self.__screen.refresh()
         self.__screen.getch()
+
+    def generate_password(self) -> None:
+        curses.curs_set(1)
+        self.__screen.clear()
+        self.__screen.refresh()
+        self.__screen.addstr(0, 0, "Password Generation")
+
+        # Eingabe der Passwortlänge
+        length = 0
+        while length <= 0:
+            self.__screen.addstr(2, 0, "Enter desired password length (e.g., 12): ")
+            self.__screen.refresh()
+            length_str = self.get_input(2, len("Enter desired password length (e.g., 12): "))
+
+            try:
+                length = int(length_str)
+                if length <= 0:
+                    raise ValueError
+            except ValueError:
+                # Lösche die vorherige Fehlermeldung und die Zeile
+                self.__screen.move(3, 0)
+                self.__screen.clrtoeol()
+                self.__screen.addstr(3, 0, "Invalid length! Please enter a positive number.")
+                self.__screen.refresh()
+
+        # Optionen zur Auswahl der Zeichenarten mit direkter Validierung
+        def ask_yes_no(question: str, y: int) -> bool:
+            while True:
+                self.__screen.addstr(y, 0, question)
+                self.__screen.refresh()
+                choice = self.get_input(y, len(question)).lower()
+                if choice in ('y', 'n'):
+                    return choice == 'y'
+                self.__screen.addstr(y + 1, 0, "Invalid input! Please enter 'y' or 'n'.")
+                self.__screen.refresh()
+
+        include_upper = ask_yes_no("Include uppercase letters (A-Z)? (y/n): ", 5)
+        include_lower = ask_yes_no("Include lowercase letters (a-z)? (y/n): ", 6)
+        include_digits = ask_yes_no("Include numbers (0-9)? (y/n): ", 7)
+        include_special = ask_yes_no("Include special characters (!@#$%^&*)? (y/n): ", 8)
+
+        # Ausschluss bestimmter Zeichen
+        self.__screen.addstr(9, 0, "Exclude specific characters (leave blank for none): ")
+        self.__screen.refresh()
+        exclude_chars = self.get_input(9, len("Exclude specific characters (leave blank for none): "))
+
+        # Generierung des Passworts
+        try:
+            password = self.__dataHandler._DataHandler__cryptor.genPassword(
+                length,
+                include_digits,
+                include_special,
+                include_upper,
+                include_lower,
+                exclude_chars
+            )
+            self.__screen.addstr(11, 0, f"Generated password: {password}")
+        except Exception as e:
+            self.__screen.addstr(11, 0, f"Error generating password: {str(e)}")
+
+        self.__screen.addstr(13, 0, "Press any key to return to the main menu.")
+        self.__screen.refresh()
+        self.__screen.getch()
+
+
+    def check_password_security(self) -> None:
+        curses.curs_set(1)
+        self.__screen.clear()
+        self.__screen.refresh()
+        self.__screen.addstr(0, 0, "Password Security Check")
+
+        # Eingabe des Passworts
+        self.__screen.addstr(2, 0, "Enter password to check: ")
+        self.__screen.refresh()
+        password = self.get_input(2, len("Enter password to check: "), password=True)
+
+        # Überprüfung der Passwortsicherheit
+        is_secure, message = self.__dataHandler._DataHandler__cryptor.isSafe(password)
+
+        # Ergebnisanzeige
+        if is_secure:
+            self.__screen.addstr(4, 0, "The password is secure.")
+        else:
+            self.__screen.addstr(4, 0, "The password is not secure.")
+            self.__screen.addstr(5, 0, f"Reason(s): {message}")
+
+        self.__screen.addstr(7, 0, "Press any key to return to the main menu.")
+        self.__screen.refresh()
+        self.__screen.getch()
+
 
     def delete_current_user(self) -> None:
         self.__screen.clear()
