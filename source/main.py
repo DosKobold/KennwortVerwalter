@@ -152,7 +152,7 @@ class Frontend:
                 self.__screen.addstr(pass_y + 2, pass_x, "Login successful! Press any key to continue.", curses.A_BOLD)
                 self.__screen.refresh()
                 self.__screen.getch()
-                self.main_menu(self.__screen)
+                self.main_menu()
             else:
                 self.__screen.addstr(pass_y + 2, pass_x, "Incorrect password! Press any key to exit.", curses.A_BOLD)
                 self.__screen.refresh()
