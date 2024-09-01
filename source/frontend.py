@@ -17,6 +17,11 @@ from dataHandler import DataHandler
 from search import SearchBar
 from cryptor import Cryptor
 
+import curses
+import datetime
+import os
+from typing import List, Optional, Union
+
 class Frontend:
     __screen: curses.window
     __dataHandler: DataHandler
@@ -37,7 +42,7 @@ class Frontend:
         curses.nocbreak()
         curses.endwin()
 
-    def loginScreen(self) -> None:
+def loginScreen(self) -> None:
         self.__initTerm()
         curses.curs_set(1)
         curses.start_color()
@@ -90,27 +95,46 @@ class Frontend:
 
         # New user creation
         if selected_user == "create_new":
-            self.__screen.clear()
-            self.__screen.refresh()
-            new_user_prompt = "Enter new username: "
-            new_user_y = 10
-            new_user_x = curses.COLS // 2 - len(new_user_prompt) // 2
-            self.__screen.addstr(new_user_y, new_user_x, new_user_prompt)
-            self.__screen.refresh()
-            new_user = self.get_input(new_user_y, new_user_x + len(new_user_prompt))
+            while True:
+                self.__screen.clear()
+                self.__screen.refresh()
+                new_user_prompt = "Enter new username: "
+                new_user_y = 10
+                new_user_x = curses.COLS // 2 - len(new_user_prompt) // 2
+                self.__screen.addstr(new_user_y, new_user_x, new_user_prompt)
+                self.__screen.refresh()
+                new_user = self.get_input(new_user_y, new_user_x + len(new_user_prompt))
 
-            new_pass_prompt = "Enter new password: "
-            new_pass_y = new_user_y + 2
-            new_pass_x = curses.COLS // 2 - len(new_pass_prompt) // 2
-            self.__screen.addstr(new_pass_y, new_pass_x, new_pass_prompt)
-            self.__screen.refresh()
-            new_pass = self.get_input(new_pass_y, new_pass_x + len(new_pass_prompt), password=True)
+                if not new_user.strip():
+                    self.__screen.addstr(new_user_y + 2, new_user_x, "Username cannot be empty. Try again.", curses.A_BOLD)
+                    self.__screen.refresh()
+                    self.__screen.getch()
+                    continue
 
-            self.__dataHandler.addUser(new_user, self.__dataHandler.getCryptor().hashKey(new_pass, True))
-            self.__screen.addstr(new_pass_y + 2, curses.COLS // 2 - 10, f"User {new_user} created.", curses.A_BOLD)
-            self.__screen.refresh()
-            self.__screen.getch()
-            selected_user = new_user
+                new_pass_prompt = "Enter new password: "
+                new_pass_y = new_user_y + 2
+                new_pass_x = curses.COLS // 2 - len(new_pass_prompt) // 2
+                self.__screen.addstr(new_pass_y, new_pass_x, new_pass_prompt)
+                self.__screen.refresh()
+                new_pass = self.get_input(new_pass_y, new_pass_x + len(new_pass_prompt), password=True)
+
+                try:
+                    # Versuch, einen neuen Nutzer hinzuzufügen
+                    self.__dataHandler.addUser(new_user, self.__dataHandler.getCryptor().hashKey(new_pass, True))
+                    self.__screen.addstr(new_pass_y + 2, curses.COLS // 2 - 10, f"User {new_user} created.", curses.A_BOLD)
+                    self.__screen.refresh()
+                    self.__screen.getch()
+                    selected_user = new_user
+                    break  # Exit loop after successful creation
+
+                except Exception as e:
+                    # Generisches Abfangen der Exception, um spezifische Fehler wie ObjectAlreadyExistsException zu behandeln
+                    if "ObjectAlreadyExistsException" in str(e):
+                        self.__screen.addstr(new_pass_y + 2, curses.COLS // 2 - 20, "User already exists. Try a different username.", curses.A_BOLD)
+                    else:
+                        self.__screen.addstr(new_pass_y + 2, curses.COLS // 2 - 20, "An error occurred. Please try again.", curses.A_BOLD)
+                    self.__screen.refresh()
+                    self.__screen.getch()
 
         # Password input
         self.__screen.clear()
@@ -128,7 +152,7 @@ class Frontend:
             self.__screen.addstr(pass_y + 2, pass_x, "Login successful! Press any key to continue.", curses.A_BOLD)
             self.__screen.refresh()
             self.__screen.getch()
-            self.main_menu()
+            self.main_menu(self.__screen)
         else:
             self.__screen.addstr(pass_y + 2, pass_x, "Incorrect password! Press any key to exit.", curses.A_BOLD)
             self.__screen.refresh()
@@ -144,8 +168,8 @@ class Frontend:
         self.__screen.clear()
         self.__screen.refresh()
 
-        current_row = 0
-        menu: list[str] = [
+        current_row: int = 0
+        menu: List[str] = [
             'Add Entry', 'View Entries', 'Edit Entry', 'Delete Category', 'Delete Entry', 'Generate Password',
             'Check Password Security', 'Delete Current User', 'Logout and Return to Login Screen', 'Exit'
         ]
@@ -155,8 +179,8 @@ class Frontend:
             h, w = self.__screen.getmaxyx()
 
             for idx, row in enumerate(menu):
-                x = w // 2 - len(row) // 2
-                y = h // 2 - len(menu) // 2 + idx
+                x: int = w // 2 - len(row) // 2
+                y: int = h // 2 - len(menu) // 2 + idx
                 if idx == current_row:
                     self.__screen.attron(curses.color_pair(1))
                     self.__screen.addstr(y, x, row)
@@ -164,7 +188,7 @@ class Frontend:
                 else:
                     self.__screen.addstr(y, x, row)
 
-            key = self.__screen.getch()
+            key: int = self.__screen.getch()
 
             if key == curses.KEY_UP and current_row > 0:
                 current_row -= 1
@@ -202,24 +226,24 @@ class Frontend:
         self.__screen.clear()
         self.__screen.refresh()
 
-        # Kategorien anzeigen und auswählen
+        # Display categories and select one to delete
         self.__screen.addstr(0, 0, "Select a category to delete:")
-        categories = self.__dataHandler.getCategories()
+        categories: List[str] = self.__dataHandler.getCategories()
         if not categories:
             self.__screen.addstr(2, 0, "No categories available. Press any key to return to the main menu.")
             self.__screen.getch()
             return
 
-        current_selection = 0
+        current_selection: int = 0
 
-        # Kategorie-Auswahlmenü
+        # Category selection menu
         while True:
             self.__screen.clear()
             self.__screen.addstr(0, 0, "Select a category to delete:")
             
             for idx, category in enumerate(categories):
-                x = curses.COLS // 2 - len(category) // 2
-                y = 2 + idx
+                x: int = curses.COLS // 2 - len(category) // 2
+                y: int = 2 + idx
                 if idx == current_selection:
                     self.__screen.attron(curses.A_REVERSE)
                     self.__screen.addstr(y, x, category)
@@ -227,14 +251,14 @@ class Frontend:
                 else:
                     self.__screen.addstr(y, x, category)
             
-            key = self.__screen.getch()
+            key: int = self.__screen.getch()
             
             if key == curses.KEY_UP and current_selection > 0:
                 current_selection -= 1
             elif key == curses.KEY_DOWN and current_selection < len(categories) - 1:
                 current_selection += 1
             elif key in (curses.KEY_ENTER, 10, 13):
-                selected_category = categories[current_selection]
+                selected_category: str = categories[current_selection]
                 break
 
             self.__screen.refresh()
@@ -501,102 +525,84 @@ class Frontend:
         self.__screen.addstr(curses.LINES - curses.LINES // 4, 0, "Press any key to return to the main menu.")
         self.__screen.getch()
 
-
-    def __ee_load_values(self, filename: str):
-        with open(filename, 'r') as file:
-            lines = file.readlines()
-            return [line.strip().split(',') for line in lines if line.strip()]
-    
-    def __ee_save_values(self, filename: str, records):
-        with open(filename, 'w') as file:
-            for record in records:
-                file.write(','.join(record) + '\n')
-    
-    def __ee_edit_fields(self, record):
-        current_field = 0
-        max_fields = 3
+    def __edit_input(self, prompt: str, y: int, x: int) -> str:
+        self.__screen.addstr(y, x, prompt)
+        self.__screen.refresh()
         curses.curs_set(1)
-    
+        input_box = curses.newwin(1, 40, y, x + len(prompt))
+        input_box.keypad(True)
+        input_value = ""
+        
         while True:
-            self.__screen.clear()
-            max_height, max_width = self.__screen.getmaxyx()
-    
-            # Display the fields
-            for i in range(max_fields):
-                self.__screen.addstr(i, 0, f"Field {i + 1}: ")
-                if current_field == i:
-                    self.__screen.attron(curses.A_REVERSE)
-                self.__screen.addstr(i, 10, record[i].ljust(max_width - 20))
-                if current_field == i:
-                    self.__screen.attroff(curses.A_REVERSE)
-    
-            # Display the Save button
-            save_button = "[ Save ]"
-            self.__screen.addstr(max_fields + 1, (max_width - len(save_button)) // 2, save_button)
-    
-            key = self.__screen.getch()
-    
-            if key in (curses.KEY_ENTER, 10, 13):
-                if current_field < max_fields:
-                    current_field += 1
-                else:
-                    break  # Exit to save changes
-            elif key == curses.KEY_BACKSPACE or key == 127:
-                if len(record[current_field]) > 0:
-                    record[current_field] = record[current_field][:-1]
-            elif key in (curses.KEY_UP, curses.KEY_DOWN):
-                if key == curses.KEY_UP and current_field > 0:
-                    current_field -= 1
-                elif key == curses.KEY_DOWN and current_field < max_fields:
-                    current_field += 1
-            elif key == 27:  # ESC key to exit without saving
-                return None
-            elif 0 <= key <= 255 and current_field < max_fields:  # Handle normal character input
-                record[current_field] += chr(key)
-    
-            self.__screen.refresh()
-    
-        return record
-    
-    def __ee_select_record(self, records):
-        current_selection = 0
+            key = input_box.get_wch()
+            if isinstance(key, str) and key in ("\n", "\r"):
+                break
+            elif key == 263:
+                input_value = input_value[:-1]
+                input_box.clear()
+                input_box.addstr(input_value)
+            elif isinstance(key, str) and key.isprintable():
+                input_value += key
+                input_box.addstr(input_value)
+            input_box.refresh()
+        
         curses.curs_set(0)
-    
-        while True:
-            self.__screen.clear()
-            max_height, max_width = self.__screen.getmaxyx()
-    
-            # Display the list of first fields
-            for idx, record in enumerate(records):
-                if idx == current_selection:
-                    self.__screen.attron(curses.A_REVERSE)
-                self.__screen.addstr(idx, 0, record[0].ljust(max_width - 1))
-                if idx == current_selection:
-                    self.__screen.attroff(curses.A_REVERSE)
-    
-            key = self.__screen.getch()
-    
-            if key in (curses.KEY_ENTER, 10, 13):
-                return current_selection
-            elif key == curses.KEY_UP and current_selection > 0:
-                current_selection -= 1
-            elif key == curses.KEY_DOWN and current_selection < len(records) - 1:
-                current_selection += 1
-            elif key == 27:  # ESC key to exit
-                return None
-    
-            self.__screen.refresh()
+        return input_value
     
     def edit_entry(self) -> None:
-        records = self.__ee_load_values(self.__dataHandler._DataHandler__path)
+        curses.noecho()
+        curses.curs_set(0)
+        self.__screen.clear()
+        height, width = self.__screen.getmaxyx()
+    
+        # Draw initial interface
+        self.__screen.addstr(height // 2 - 2, width // 2 - 10, "")
+        self.__screen.addstr(height // 2 - 1, width // 2 - 10, "")
+        self.__screen.addstr(height // 2 + 1, width // 2 - 10, "[ Edit ]")
+        self.__screen.refresh()
+    
+        category = self.__edit_input("Category: ", height // 2 - 2, width // 2 - 4)
+        self.__screen.refresh()
+        title = self.__edit_input("Title: ", height // 2 - 1, width // 2 - 4)
+        self.__screen.refresh()
+        
         while True:
-            idx = self.__ee_select_record(records)
-            if idx is None:
+            key = self.__screen.getch()
+            if key in (curses.KEY_ENTER, 10, 13):
+                self.__screen.clear()
+                self.__edit_values(category, title)
                 break
-            edited = self.__ee_edit_fields(records[idx])
-            if edited:
-                records[idx] = edited
-                self.__ee_save_values(self.__dataHandler._DataHandler__path, records)
+    
+    def __edit_values(self, category: str, title: str) -> None:
+        height, width = self.__screen.getmaxyx()
+    
+        # Draw edit interface
+        self.__screen.addstr(height // 2 - 3, width // 2 - 10, "Name: ")
+        self.__screen.refresh()
+        self.__screen.addstr(height // 2 - 2, width // 2 - 10, "URL: ")
+        self.__screen.refresh()
+        self.__screen.addstr(height // 2 - 1, width // 2 - 10, "Notices: ")
+        self.__screen.refresh()
+        self.__screen.addstr(height // 2 + 1, width // 2 - 10, "[ Save ]")
+        self.__screen.refresh()
+    
+        name = self.__edit_input("Name: ", height // 2 - 3, width // 2 - 4)
+        url = self.__edit_input("URL: ", height // 2 - 2, width // 2 - 4)
+        notices = self.__edit_input("Notices: ", height // 2 - 1, width // 2 - 4)
+    
+        while True:
+            key = self.__screen.getch()
+            if key in (curses.KEY_ENTER, 10, 13):
+                self.__screen.clear()
+                self.__screen.addstr(height // 2, width // 2 - 10, "Changes saved! Press any key to exit.")
+                self.__screen.refresh()
+                self.__screen.getch()
+                break
+
+        self.__dataHandler.changeEntry(category, title, "name", name)
+        self.__dataHandler.changeEntry(category, title, "url", url)
+        self.__dataHandler.changeEntry(category, title, "notices", notices)
+        self.__dataHandler.changeEntry(category, title, "timestamp", str(datetime.datetime.now()))
 
     def delete_entry(self) -> None:
             curses.curs_set(0)
