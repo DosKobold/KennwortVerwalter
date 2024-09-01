@@ -53,7 +53,7 @@ class Frontend:
             self.__screen.addstr(path_y, path_x, path_prompt)
             self.__screen.refresh()
             curses.echo()
-            db_path = self.get_input(self.__screen, path_y, path_x + len(path_prompt))
+            db_path = self.get_input(path_y, path_x + len(path_prompt))
             if not db_path.strip():
                 db_path = "autoCreated.kwv"
             curses.noecho()
@@ -93,14 +93,14 @@ class Frontend:
             new_user_x = curses.COLS // 2 - len(new_user_prompt) // 2
             self.__screen.addstr(new_user_y, new_user_x, new_user_prompt)
             self.__screen.refresh()
-            new_user = self.get_input(self.__screen, new_user_y, new_user_x + len(new_user_prompt))
+            new_user = self.get_input(new_user_y, new_user_x + len(new_user_prompt))
 
             new_pass_prompt = "Enter new password: "
             new_pass_y = new_user_y + 2
             new_pass_x = curses.COLS // 2 - len(new_pass_prompt) // 2
             self.__screen.addstr(new_pass_y, new_pass_x, new_pass_prompt)
             self.__screen.refresh()
-            new_pass = self.get_input(self.__screen, new_pass_y, new_pass_x + len(new_pass_prompt), password=True)
+            new_pass = self.get_input(new_pass_y, new_pass_x + len(new_pass_prompt), password=True)
 
             self.dataHandler.addUser(new_user, self.dataHandler._DataHandler__cryptor.hashKey(new_pass, True))
             self.__screen.addstr(new_pass_y + 2, curses.COLS // 2 - 10, f"User {new_user} created.", curses.A_BOLD)
@@ -116,7 +116,7 @@ class Frontend:
         pass_x = curses.COLS // 2 - len(password_prompt) // 2
         self.__screen.addstr(pass_y, pass_x, password_prompt)
         self.__screen.refresh()
-        entered_password = self.get_input(self.__screen, pass_y, pass_x + len(password_prompt), password=True)
+        entered_password = self.get_input(pass_y, pass_x + len(password_prompt), password=True)
 
         # Authentication
         if self.dataHandler._DataHandler__cryptor.isCorrectKey(entered_password, self.dataHandler.getKey(selected_user)):
@@ -124,7 +124,7 @@ class Frontend:
             self.__screen.addstr(pass_y + 2, pass_x, "Login successful! Press any key to continue.", curses.A_BOLD)
             self.__screen.refresh()
             self.__screen.getch()
-            self.main_menu(self.__screen)
+            self.main_menu()
         else:
             self.__screen.addstr(pass_y + 2, pass_x, "Incorrect password! Press any key to exit.", curses.A_BOLD)
             self.__screen.refresh()
@@ -132,13 +132,13 @@ class Frontend:
             self.resetTerm()
             exit()
 
-    def main_menu(self, stdscr: curses.window) -> None:
+    def main_menu(self) -> None:
         curses.curs_set(0)
         curses.start_color()
         curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
-        stdscr.clear()
-        stdscr.refresh()
+        self.__screen.clear()
+        self.__screen.refresh()
 
         current_row = 0
         menu: list[str] = [
@@ -147,20 +147,20 @@ class Frontend:
         ]
 
         while True:
-            stdscr.clear()
-            h, w = stdscr.getmaxyx()
+            self.__screen.clear()
+            h, w = self.__screen.getmaxyx()
 
             for idx, row in enumerate(menu):
                 x = w // 2 - len(row) // 2
                 y = h // 2 - len(menu) // 2 + idx
                 if idx == current_row:
-                    stdscr.attron(curses.color_pair(1))
-                    stdscr.addstr(y, x, row)
-                    stdscr.attroff(curses.color_pair(1))
+                    self.__screen.attron(curses.color_pair(1))
+                    self.__screen.addstr(y, x, row)
+                    self.__screen.attroff(curses.color_pair(1))
                 else:
-                    stdscr.addstr(y, x, row)
+                    self.__screen.addstr(y, x, row)
 
-            key = stdscr.getch()
+            key = self.__screen.getch()
 
             if key == curses.KEY_UP and current_row > 0:
                 current_row -= 1
@@ -168,22 +168,22 @@ class Frontend:
                 current_row += 1
             elif key in (curses.KEY_ENTER, 10, 13):
                 if current_row == 0:
-                    self.add_entry(stdscr)
+                    self.add_entry()
                 elif current_row == 1:
-                    self.view_entries(stdscr)
+                    self.view_categories()
                 elif current_row == 2:
-                    self.edit_entry(stdscr)
+                    self.edit_entry()
                 elif current_row == 3:
-                    self.delete_entry(stdscr)
+                    self.delete_entry()
                 elif current_row == 4:
-                    self.delete_current_user(stdscr)
+                    self.delete_current_user()
                 elif current_row == 5:
-                    self.back_to_login(stdscr)
+                    self.back_to_login()
                 elif current_row == 6:
                     self.resetTerm()
                     break
 
-            stdscr.refresh()
+            self.__screen.refresh()
     
         exit()
 
@@ -192,19 +192,19 @@ class Frontend:
         if "default" not in categories:
             self.dataHandler.addCategory("default")
 
-    def add_entry(self, stdscr: curses.window) -> None:
+    def add_entry(self) -> None:
         curses.curs_set(1)
-        stdscr.clear()
-        stdscr.refresh()
+        self.__screen.clear()
+        self.__screen.refresh()
 
         fields = [("Title: ", 2, 0), ("Username: ", 3, 0), ("Password: ", 4, 0),
                   ("URL: ", 5, 0), ("Notes: ", 6, 0)]
         inputs: list[str] = []
 
         for field, y, x in fields:
-            stdscr.addstr(y, x, field)
-            stdscr.refresh()
-            input_value = self.get_input(stdscr, y, x + len(field))
+            self.__screen.addstr(y, x, field)
+            self.__screen.refresh()
+            input_value = self.get_input(y, x + len(field))
             inputs.append(input_value)
 
         title, username, password, url, notes = inputs
@@ -214,10 +214,10 @@ class Frontend:
 
         self.dataHandler.addEntry("default", title, username, password, url, notes, timestamp)
 
-        stdscr.addstr(8, 0, "Entry added! Press any key to return to the main menu.")
-        stdscr.getch()
+        self.__screen.addstr(8, 0, "Entry added! Press any key to return to the main menu.")
+        self.__screen.getch()
 
-    def get_input(self, stdscr: curses.window, y: int, x: int, password: bool = False) -> str:
+    def get_input(self, y: int, x: int, password: bool = False) -> str:
         curses.noecho()
         max_width = curses.COLS
         win = curses.newwin(1, max_width, y, x) 
@@ -293,67 +293,102 @@ class Frontend:
                 else:
                     return menu_items[current_row]
 
-    def view_entries(self, stdscr: curses.window) -> None:
-        items: list[str] = []
-
+    def view_categories(self) -> None:
         curses.curs_set(0)
-        stdscr.clear()
-        stdscr.refresh()
-
+        current_selection = 0
+        
         self.ensure_default_category()
+        items = self.dataHandler.getCategories()
 
-        stdscr.addstr(4, 10, "search: ")
-        categories = self.dataHandler.getCategories()
-        for cat in categories:
-            items += self.dataHandler.getEntries(cat)
-        search_bar = SearchBar(stdscr, items)
+        while True:
+            self.__screen.clear()
+    
+            max_height, max_width = self.__screen.getmaxyx()
+    
+            total_width = sum(len(item) + 4 for item in items) - 1
+            start_x = (max_width // 2) - (total_width // 2)
+            y_position = 0
+            
+            current_x = start_x
+            
+            for idx, item in enumerate(items):
+                item_with_padding = f"[ {item} ]"
+                if idx == current_selection:
+                    self.__screen.attron(curses.A_REVERSE)
+                    self.__screen.addstr(y_position, current_x, item_with_padding)
+                    self.__screen.attroff(curses.A_REVERSE)
+                else:
+                    self.__screen.addstr(y_position, current_x, item_with_padding)
+                current_x += len(item_with_padding) + 1
+    
+            key = self.__screen.getch()
+    
+            if key in (curses.KEY_ENTER, 10, 13):
+                self.view_entries(items[current_selection])
+            elif key == curses.KEY_LEFT and current_selection > 0:
+                current_selection -= 1
+            elif key == curses.KEY_RIGHT and current_selection < len(items) - 1:
+                current_selection += 1
+            elif key in (27, curses.KEY_EXIT):
+                break
+    
+            self.__screen.refresh()
+
+    def view_entries(self, category: str) -> None:
+        curses.curs_set(0)
+        self.__screen.clear()
+        self.__screen.refresh()
+        self.__screen.addstr(4, 10, "search: ")
+
+        items: list[str] = self.dataHandler.getEntries(category)
+        search_bar = SearchBar(self.__screen, items)
         search_bar.display()
-        stdscr.addstr(len(entries) + 8, 0, "Press any key to return to the main menu.")
-        stdscr.getch()
+        self.__screen.addstr(len(items) + 8, 0, "Press any key to return to the main menu.")
+        self.__screen.getch()
 
-    def edit_entry(self, stdscr: curses.window) -> None:
+    def edit_entry(self) -> None:
         curses.curs_set(1)
-        stdscr.clear()
-        stdscr.refresh()
-        stdscr.addstr(0, 0, "Edit Entry")
+        self.__screen.clear()
+        self.__screen.refresh()
+        self.__screen.addstr(0, 0, "Edit Entry")
 
         self.ensure_default_category()
 
         entries = self.dataHandler.getEntries("default")
 
         if not entries:
-            stdscr.addstr(2, 0, "No entries to edit in the 'default' category.")
-            stdscr.addstr(4, 0, "Press any key to return to the main menu.")
-            stdscr.getch()
+            self.__screen.addstr(2, 0, "No entries to edit in the 'default' category.")
+            self.__screen.addstr(4, 0, "Press any key to return to the main menu.")
+            self.__screen.getch()
             return
 
-        stdscr.addstr(2, 0, "Select an entry to edit:")
+        self.__screen.addstr(2, 0, "Select an entry to edit:")
         for idx, entry in enumerate(entries):
             if isinstance(entry, dict):
-                stdscr.addstr(3 + idx, 0, f"{idx + 1}. {entry['title']}")
+                self.__screen.addstr(3 + idx, 0, f"{idx + 1}. {entry['title']}")
 
-        selected_index = int(self.get_input(stdscr, 3 + len(entries), 0)) - 1
+        selected_index = int(self.get_input(3 + len(entries), 0)) - 1
         selected_entry = entries[selected_index]
 
-        stdscr.addstr(4 + len(entries), 0, "Enter property to change (title, name, password, url, notices, timestamp): ")
-        prop = self.get_input(stdscr, 5 + len(entries), 0)
+        self.__screen.addstr(4 + len(entries), 0, "Enter property to change (title, name, password, url, notices, timestamp): ")
+        prop = self.get_input(5 + len(entries), 0)
 
-        stdscr.addstr(6 + len(entries), 0, "Enter new value: ")
-        value = self.get_input(stdscr, 7 + len(entries), 0)
+        self.__screen.addstr(6 + len(entries), 0, "Enter new value: ")
+        value = self.get_input(7 + len(entries), 0)
 
         self.dataHandler.changeEntry("default", selected_entry['title'], prop, value)
 
-        stdscr.addstr(9 + len(entries), 0, "Entry updated! Press any key to return to the main menu.")
-        stdscr.getch()
+        self.__screen.addstr(9 + len(entries), 0, "Entry updated! Press any key to return to the main menu.")
+        self.__screen.getch()
 
-    def delete_entry(self, stdscr: curses.window) -> None:
+    def delete_entry(self) -> None:
         curses.curs_set(1)
-        stdscr.clear()
-        stdscr.refresh()
-        stdscr.addstr(0, 0, "Delete Entry")
+        self.__screen.clear()
+        self.__screen.refresh()
+        self.__screen.addstr(0, 0, "Delete Entry")
 
-        stdscr.addstr(2, 0, "Enter entry title to delete: ")
-        title = self.get_input(stdscr, 2, 20)
+        self.__screen.addstr(2, 0, "Enter entry title to delete: ")
+        title = self.get_input(2, 20)
 
         self.ensure_default_category()
 
@@ -364,30 +399,30 @@ class Frontend:
                 entries.pop(idx)
                 break
 
-        stdscr.addstr(4, 0, "Entry deleted! Press any key to return to the main menu.")
-        stdscr.getch()
+        self.__screen.addstr(4, 0, "Entry deleted! Press any key to return to the main menu.")
+        self.__screen.getch()
 
-    def delete_current_user(self, stdscr: curses.window) -> None:
-        stdscr.clear()
-        stdscr.addstr(0, 0, "Delete Current User")
-        stdscr.addstr(2, 0, "Are you sure you want to delete your account? (y/n): ")
-        choice = stdscr.get_wch()
+    def delete_current_user(self) -> None:
+        self.__screen.clear()
+        self.__screen.addstr(0, 0, "Delete Current User")
+        self.__screen.addstr(2, 0, "Are you sure you want to delete your account? (y/n): ")
+        choice = self.__screen.get_wch()
 
         if choice in ('y', 'Y'):
             self.dataHandler.remUser()
-            stdscr.addstr(4, 0, "User deleted! Press any key to exit.")
-            stdscr.getch()
+            self.__screen.addstr(4, 0, "User deleted! Press any key to exit.")
+            self.__screen.getch()
             self.loginScreen()
         else:
-            stdscr.addstr(4, 0, "Cancelled. Press any key to return to the main menu.")
-            stdscr.getch()
+            self.__screen.addstr(4, 0, "Cancelled. Press any key to return to the main menu.")
+            self.__screen.getch()
 
-    def back_to_login(self, stdscr: curses.window) -> None:
+    def back_to_login(self) -> None:
         # Close the current session if open
         self.dataHandler.closeSession()
         # Clear the screen and reinitialize the login process
-        stdscr.clear()
-        stdscr.refresh()
+        self.__screen.clear()
+        self.__screen.refresh()
         self.loginScreen()
 
 def main() -> None:
