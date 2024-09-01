@@ -15,10 +15,10 @@ from cryptor import Cryptor
 
 class Frontend:
     __screen: curses.window
-    dataHandler: DataHandler
+    __dataHandler: DataHandler
 
     def __init__(self, dataHandler: DataHandler) -> None:
-        self.dataHandler = dataHandler
+        self.__dataHandler = dataHandler
 
     def __initTerm(self) -> None:
         self.__screen = curses.initscr()
@@ -63,8 +63,8 @@ class Frontend:
                 if not os.path.exists(db_path):
                     self.__screen.addstr(6, curses.COLS // 2 - 20, f"File {db_path} not found. Creating new file...", curses.A_BOLD)
                     self.__screen.refresh()
-                    self.dataHandler.createFile(db_path, "default_user", "default_key")
-                self.dataHandler.openFile(db_path)
+                    self.__dataHandler.createFile(db_path, "default_user", "default_key")
+                self.__dataHandler.openFile(db_path)
                 break  # Exit the loop if the path is valid
             except Exception as e:
                 # Display error message
@@ -78,7 +78,7 @@ class Frontend:
                 self.__screen.clrtoeol()
 
         # User selection or creation
-        users = self.dataHandler.getUsers()
+        users = self.__dataHandler.getUsers()
         self.__screen.addstr(8, curses.COLS // 2 - 20, "Select a user or create a new one:", curses.A_BOLD)
         self.__screen.refresh()
 
@@ -102,7 +102,7 @@ class Frontend:
             self.__screen.refresh()
             new_pass = self.get_input(new_pass_y, new_pass_x + len(new_pass_prompt), password=True)
 
-            self.dataHandler.addUser(new_user, self.dataHandler._DataHandler__cryptor.hashKey(new_pass, True))
+            self.__dataHandler.addUser(new_user, self.__dataHandler._DataHandler__cryptor.hashKey(new_pass, True))
             self.__screen.addstr(new_pass_y + 2, curses.COLS // 2 - 10, f"User {new_user} created.", curses.A_BOLD)
             self.__screen.refresh()
             self.__screen.getch()
@@ -119,8 +119,8 @@ class Frontend:
         entered_password = self.get_input(pass_y, pass_x + len(password_prompt), password=True)
 
         # Authentication
-        if self.dataHandler._DataHandler__cryptor.isCorrectKey(entered_password, self.dataHandler.getKey(selected_user)):
-            self.dataHandler.startSession()
+        if self.__dataHandler._DataHandler__cryptor.isCorrectKey(entered_password, self.__dataHandler.getKey(selected_user)):
+            self.__dataHandler.startSession()
             self.__screen.addstr(pass_y + 2, pass_x, "Login successful! Press any key to continue.", curses.A_BOLD)
             self.__screen.refresh()
             self.__screen.getch()
@@ -188,9 +188,9 @@ class Frontend:
         exit()
 
     def ensure_default_category(self) -> None:
-        categories = self.dataHandler.getCategories()
+        categories = self.__dataHandler.getCategories()
         if "default" not in categories:
-            self.dataHandler.addCategory("default")
+            self.__dataHandler.addCategory("default")
 
     def add_entry(self) -> None:
         curses.curs_set(1)
@@ -212,7 +212,7 @@ class Frontend:
 
         self.ensure_default_category()
 
-        self.dataHandler.addEntry("default", title, username, password, url, notes, timestamp)
+        self.__dataHandler.addEntry("default", title, username, password, url, notes, timestamp)
 
         self.__screen.addstr(8, 0, "Entry added! Press any key to return to the main menu.")
         self.__screen.getch()
@@ -298,7 +298,7 @@ class Frontend:
         current_selection = 0
         
         self.ensure_default_category()
-        items = self.dataHandler.getCategories()
+        items = self.__dataHandler.getCategories()
 
         while True:
             self.__screen.clear()
@@ -340,7 +340,7 @@ class Frontend:
         self.__screen.refresh()
         self.__screen.addstr(4, 10, "search: ")
 
-        items: list[str] = self.dataHandler.getEntries(category)
+        items: list[str] = self.__dataHandler.getEntries(category)
         search_bar = SearchBar(self.__screen, items)
         search_bar.display()
         self.__screen.addstr(len(items) + 8, 0, "Press any key to return to the main menu.")
@@ -354,7 +354,7 @@ class Frontend:
 
         self.ensure_default_category()
 
-        entries = self.dataHandler.getEntries("default")
+        entries = self.__dataHandler.getEntries("default")
 
         if not entries:
             self.__screen.addstr(2, 0, "No entries to edit in the 'default' category.")
@@ -376,7 +376,7 @@ class Frontend:
         self.__screen.addstr(6 + len(entries), 0, "Enter new value: ")
         value = self.get_input(7 + len(entries), 0)
 
-        self.dataHandler.changeEntry("default", selected_entry['title'], prop, value)
+        self.__dataHandler.changeEntry("default", selected_entry['title'], prop, value)
 
         self.__screen.addstr(9 + len(entries), 0, "Entry updated! Press any key to return to the main menu.")
         self.__screen.getch()
@@ -392,7 +392,7 @@ class Frontend:
 
         self.ensure_default_category()
 
-        entries = self.dataHandler.getEntries("default")
+        entries = self.__dataHandler.getEntries("default")
 
         for idx, entry in enumerate(entries):
             if isinstance(entry, dict) and "title" in entry and entry["title"] == title:
@@ -409,7 +409,7 @@ class Frontend:
         choice = self.__screen.get_wch()
 
         if choice in ('y', 'Y'):
-            self.dataHandler.remUser()
+            self.__dataHandler.remUser()
             self.__screen.addstr(4, 0, "User deleted! Press any key to exit.")
             self.__screen.getch()
             self.loginScreen()
@@ -419,7 +419,7 @@ class Frontend:
 
     def back_to_login(self) -> None:
         # Close the current session if open
-        self.dataHandler.closeSession()
+        self.__dataHandler.closeSession()
         # Clear the screen and reinitialize the login process
         self.__screen.clear()
         self.__screen.refresh()
