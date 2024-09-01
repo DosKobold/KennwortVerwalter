@@ -52,19 +52,3 @@ class SearchBar:
             self.__screen.addstr(0, 0, f"Selected: {selected_item}")
             self.__screen.refresh()
             self.__screen.getch()
-
-# ATTENTION: 
-# ------
-# This is NOT connected to Pauls search as of now because weird
-# error. This stuff is only here to TEST if the DRAWING works!
-# ------
-def main(screen):
-    items = [
-        "Apple", "Banana", "Orange", "Grapes", "Watermelon", "Pineapple",
-        "Strawberry", "Blueberry", "Raspberry", "Mango", "Papaya", "Lemon"
-    ]
-    search_bar = SearchBar(screen, items)
-    search_bar.display()
-
-if __name__ == "__main__":
-    curses.wrapper(main)

@@ -294,28 +294,20 @@ class Frontend:
                     return menu_items[current_row]
 
     def view_entries(self, stdscr: curses.window) -> None:
+        items: list[str] = []
+
         curses.curs_set(0)
         stdscr.clear()
         stdscr.refresh()
 
         self.ensure_default_category()
 
-        entries = self.dataHandler.getEntries("default")
-
         stdscr.addstr(4, 10, "search: ")
-        items = [
-            "Apple", "Banana", "Orange", "Grapes", "Watermelon", "Pineapple",
-            "Strawberry", "Blueberry", "Raspberry", "Mango", "Papaya", "Lemon"
-        ]
+        categories = self.dataHandler.getCategories()
+        for cat in categories:
+            items += self.dataHandler.getEntries(cat)
         search_bar = SearchBar(stdscr, items)
         search_bar.display()
-
-        for idx, entry in enumerate(entries):
-            if isinstance(entry, dict):
-                stdscr.addstr(2 + idx, 0, f"{idx + 1}. {entry['title']} - {entry['name']}")
-            else:
-                stdscr.addstr(2 + idx, 0, f"{idx + 1}. {entry}")
-
         stdscr.addstr(len(entries) + 8, 0, "Press any key to return to the main menu.")
         stdscr.getch()
 
