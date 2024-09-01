@@ -438,40 +438,51 @@ class Frontend:
         self.__screen.addstr(curses.LINES - curses.LINES // 4, 0, "Press any key to return to the main menu.")
         self.__screen.getch()
 
-    def edit_entry(self) -> None:
+    
+    def edit_entry(self):
+        with open(self.__dataHandler._DataHandler__path, 'r') as file:
+            line = file.readline().strip()
+            values = line.split(',')
+        current_field = 0
+        max_fields = 3
+        field_lengths = [max(20, len(value)) for value in values]
         curses.curs_set(1)
-        self.__screen.clear()
-        self.__screen.refresh()
-        self.__screen.addstr(0, 0, "Edit Entry")
-
-        self.ensure_default_category()
-
-        entries = self.__dataHandler.getEntries("default")
-
-        if not entries:
-            self.__screen.addstr(2, 0, "No entries to edit in the 'default' category.")
-            self.__screen.addstr(4, 0, "Press any key to return to the main menu.")
-            self.__screen.getch()
-            return
-
-        self.__screen.addstr(2, 0, "Select an entry to edit:")
-        for idx, entry in enumerate(entries):
-            if isinstance(entry, dict):
-                self.__screen.addstr(3 + idx, 0, f"{idx + 1}. {entry['title']}")
-
-        selected_index = int(self.get_input(3 + len(entries), 0)) - 1
-        selected_entry = entries[selected_index]
-
-        self.__screen.addstr(4 + len(entries), 0, "Enter property to change (title, name, password, url, notices, timestamp): ")
-        prop = self.get_input(5 + len(entries), 0)
-
-        self.__screen.addstr(6 + len(entries), 0, "Enter new value: ")
-        value = self.get_input(7 + len(entries), 0)
-
-        self.__dataHandler.changeEntry("default", selected_entry['title'], prop, value)
-
-        self.__screen.addstr(9 + len(entries), 0, "Entry updated! Press any key to return to the main menu.")
-        self.__screen.getch()
+    
+        while True:
+            self.__screen.clear()
+            max_height, max_width = self.__screen.getmaxyx()
+            for i in range(max_fields):
+                self.__screen.addstr(i, 0, f"Field {i + 1}: ")
+                if current_field == i:
+                    self.__screen.attron(curses.A_REVERSE)
+                self.__screen.addstr(i, 10, values[i].ljust(field_lengths[i]))
+                if current_field == i:
+                    self.__screen.attroff(curses.A_REVERSE)
+    
+            save_button = "[ Save ]"
+            self.__screen.addstr(max_fields + 1, (max_width - len(save_button)) // 2, save_button)
+            key = self.__screen.getch()
+            if key in (curses.KEY_ENTER, 10, 13):
+                if current_field < max_fields:
+                    current_field += 1
+                else:
+                    with open(self.__dataHandler._DataHandler__path, 'w') as file:
+                        file.write(','.join(values))
+                    break
+            elif key == curses.KEY_BACKSPACE or key == 127:
+                if len(values[current_field]) > 0:
+                    values[current_field] = values[current_field][:-1]
+            elif key in (curses.KEY_UP, curses.KEY_DOWN):
+                if key == curses.KEY_UP and current_field > 0:
+                    current_field -= 1
+                elif key == curses.KEY_DOWN and current_field < max_fields:
+                    current_field += 1
+            elif key == 27:
+                break
+            elif 0 <= key <= 255 and current_field < max_fields:
+                values[current_field] += chr(key)
+    
+            self.__screen.refresh()
 
     def delete_entry(self) -> None:
             curses.curs_set(0)
