@@ -189,7 +189,7 @@ class Frontend:
                     self.delete_current_user()
                 elif current_row == 8:
                     self.back_to_login()
-                elif current_row == 8:
+                elif current_row == 9:
                     self.resetTerm()
                     break
 
