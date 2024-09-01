@@ -348,9 +348,10 @@ class Frontend:
             return
 
         i: int = 0
+        self.__screen.addstr(curses.LINES // 2 + i, curses.COLS // 2, f"Title: {selected}")
         for key in found:
-            self.__screen.addstr(curses.LINES // 2 + i, curses.COLS // 2, f"{key}: {found[key]}")
             i += 1
+            self.__screen.addstr(curses.LINES // 2 + i, curses.COLS // 2, f"{key}: {found[key]}")
         self.__screen.refresh()
         self.__screen.addstr(curses.LINES - curses.LINES // 4, 0, "Press any key to return to the main menu.")
         self.__screen.getch()
