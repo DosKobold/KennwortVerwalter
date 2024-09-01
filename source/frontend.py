@@ -42,124 +42,124 @@ class Frontend:
         curses.nocbreak()
         curses.endwin()
 
-def loginScreen(self) -> None:
-        self.__initTerm()
-        curses.curs_set(1)
-        curses.start_color()
-        curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
-        self.__screen.clear()
-        self.__screen.refresh()
-
-        # Title
-        title = "Welcome to Password Manager"
-        self.__screen.addstr(1, curses.COLS // 2 - len(title) // 2, title, curses.A_BOLD | curses.A_UNDERLINE)
-
-        # File Path Input
-        while True:
-            path_prompt = "Enter path to database file (default: autoCreated.kwv): "
-            path_y = 4
-            path_x = curses.COLS // 2 - len(path_prompt) // 2
-            self.__screen.addstr(path_y, path_x, path_prompt)
+    def loginScreen(self) -> None:
+            self.__initTerm()
+            curses.curs_set(1)
+            curses.start_color()
+            curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+            self.__screen.clear()
             self.__screen.refresh()
-            curses.echo()
-            db_path = self.get_input(path_y, path_x + len(path_prompt))
-            if not db_path.strip():
-                db_path = "autoCreated.kwv"
-            curses.noecho()
-
-            # Check if the file exists or can be created
-            try:
-                if not os.path.exists(db_path):
-                    self.__screen.addstr(6, curses.COLS // 2 - 20, f"File {db_path} not found. Creating new file...", curses.A_BOLD)
-                    self.__screen.refresh()
-                    self.__dataHandler.createFile(db_path, "default_user", "default_key")
-                self.__dataHandler.openFile(db_path)
-                break  # Exit the loop if the path is valid
-            except Exception as e:
-                # Display error message
-                error_message = f"Error: {str(e)} - Invalid path! Please try again."
-                self.__screen.addstr(6, curses.COLS // 2 - len(error_message) // 2, error_message, curses.A_BOLD)
-                self.__screen.refresh()
-                self.__screen.getch()  # Wait for user to press a key
-
-                # Clear the error message
-                self.__screen.move(6, 0)
-                self.__screen.clrtoeol()
-
-        # User selection or creation
-        users = self.__dataHandler.getUsers()
-        self.__screen.addstr(8, curses.COLS // 2 - 20, "Select a user or create a new one:", curses.A_BOLD)
-        self.__screen.refresh()
-
-        selected_user = self.select_user(users)
-
-        # New user creation
-        if selected_user == "create_new":
+    
+            # Title
+            title = "Welcome to Password Manager"
+            self.__screen.addstr(1, curses.COLS // 2 - len(title) // 2, title, curses.A_BOLD | curses.A_UNDERLINE)
+    
+            # File Path Input
             while True:
-                self.__screen.clear()
+                path_prompt = "Enter path to database file (default: autoCreated.kwv): "
+                path_y = 4
+                path_x = curses.COLS // 2 - len(path_prompt) // 2
+                self.__screen.addstr(path_y, path_x, path_prompt)
                 self.__screen.refresh()
-                new_user_prompt = "Enter new username: "
-                new_user_y = 10
-                new_user_x = curses.COLS // 2 - len(new_user_prompt) // 2
-                self.__screen.addstr(new_user_y, new_user_x, new_user_prompt)
-                self.__screen.refresh()
-                new_user = self.get_input(new_user_y, new_user_x + len(new_user_prompt))
-
-                if not new_user.strip():
-                    self.__screen.addstr(new_user_y + 2, new_user_x, "Username cannot be empty. Try again.", curses.A_BOLD)
-                    self.__screen.refresh()
-                    self.__screen.getch()
-                    continue
-
-                new_pass_prompt = "Enter new password: "
-                new_pass_y = new_user_y + 2
-                new_pass_x = curses.COLS // 2 - len(new_pass_prompt) // 2
-                self.__screen.addstr(new_pass_y, new_pass_x, new_pass_prompt)
-                self.__screen.refresh()
-                new_pass = self.get_input(new_pass_y, new_pass_x + len(new_pass_prompt), password=True)
-
+                curses.echo()
+                db_path = self.get_input(path_y, path_x + len(path_prompt))
+                if not db_path.strip():
+                    db_path = "autoCreated.kwv"
+                curses.noecho()
+    
+                # Check if the file exists or can be created
                 try:
-                    # Versuch, einen neuen Nutzer hinzuzufügen
-                    self.__dataHandler.addUser(new_user, self.__dataHandler.getCryptor().hashKey(new_pass, True))
-                    self.__screen.addstr(new_pass_y + 2, curses.COLS // 2 - 10, f"User {new_user} created.", curses.A_BOLD)
-                    self.__screen.refresh()
-                    self.__screen.getch()
-                    selected_user = new_user
-                    break  # Exit loop after successful creation
-
+                    if not os.path.exists(db_path):
+                        self.__screen.addstr(6, curses.COLS // 2 - 20, f"File {db_path} not found. Creating new file...", curses.A_BOLD)
+                        self.__screen.refresh()
+                        self.__dataHandler.createFile(db_path, "default_user", "default_key")
+                    self.__dataHandler.openFile(db_path)
+                    break  # Exit the loop if the path is valid
                 except Exception as e:
-                    # Generisches Abfangen der Exception, um spezifische Fehler wie ObjectAlreadyExistsException zu behandeln
-                    if "ObjectAlreadyExistsException" in str(e):
-                        self.__screen.addstr(new_pass_y + 2, curses.COLS // 2 - 20, "User already exists. Try a different username.", curses.A_BOLD)
-                    else:
-                        self.__screen.addstr(new_pass_y + 2, curses.COLS // 2 - 20, "An error occurred. Please try again.", curses.A_BOLD)
+                    # Display error message
+                    error_message = f"Error: {str(e)} - Invalid path! Please try again."
+                    self.__screen.addstr(6, curses.COLS // 2 - len(error_message) // 2, error_message, curses.A_BOLD)
                     self.__screen.refresh()
-                    self.__screen.getch()
-
-        # Password input
-        self.__screen.clear()
-        self.__screen.refresh()
-        password_prompt = f"Enter password for {selected_user}: "
-        pass_y = 10
-        pass_x = curses.COLS // 2 - len(password_prompt) // 2
-        self.__screen.addstr(pass_y, pass_x, password_prompt)
-        self.__screen.refresh()
-        entered_password = self.get_input(pass_y, pass_x + len(password_prompt), password=True)
-
-        # Authentication
-        if self.__dataHandler.getCryptor().isCorrectKey(entered_password, self.__dataHandler.getKey(selected_user)):
-            self.__dataHandler.startSession()
-            self.__screen.addstr(pass_y + 2, pass_x, "Login successful! Press any key to continue.", curses.A_BOLD)
+                    self.__screen.getch()  # Wait for user to press a key
+    
+                    # Clear the error message
+                    self.__screen.move(6, 0)
+                    self.__screen.clrtoeol()
+    
+            # User selection or creation
+            users = self.__dataHandler.getUsers()
+            self.__screen.addstr(8, curses.COLS // 2 - 20, "Select a user or create a new one:", curses.A_BOLD)
             self.__screen.refresh()
-            self.__screen.getch()
-            self.main_menu(self.__screen)
-        else:
-            self.__screen.addstr(pass_y + 2, pass_x, "Incorrect password! Press any key to exit.", curses.A_BOLD)
+    
+            selected_user = self.select_user(users)
+    
+            # New user creation
+            if selected_user == "create_new":
+                while True:
+                    self.__screen.clear()
+                    self.__screen.refresh()
+                    new_user_prompt = "Enter new username: "
+                    new_user_y = 10
+                    new_user_x = curses.COLS // 2 - len(new_user_prompt) // 2
+                    self.__screen.addstr(new_user_y, new_user_x, new_user_prompt)
+                    self.__screen.refresh()
+                    new_user = self.get_input(new_user_y, new_user_x + len(new_user_prompt))
+    
+                    if not new_user.strip():
+                        self.__screen.addstr(new_user_y + 2, new_user_x, "Username cannot be empty. Try again.", curses.A_BOLD)
+                        self.__screen.refresh()
+                        self.__screen.getch()
+                        continue
+    
+                    new_pass_prompt = "Enter new password: "
+                    new_pass_y = new_user_y + 2
+                    new_pass_x = curses.COLS // 2 - len(new_pass_prompt) // 2
+                    self.__screen.addstr(new_pass_y, new_pass_x, new_pass_prompt)
+                    self.__screen.refresh()
+                    new_pass = self.get_input(new_pass_y, new_pass_x + len(new_pass_prompt), password=True)
+    
+                    try:
+                        # Versuch, einen neuen Nutzer hinzuzufügen
+                        self.__dataHandler.addUser(new_user, self.__dataHandler.getCryptor().hashKey(new_pass, True))
+                        self.__screen.addstr(new_pass_y + 2, curses.COLS // 2 - 10, f"User {new_user} created.", curses.A_BOLD)
+                        self.__screen.refresh()
+                        self.__screen.getch()
+                        selected_user = new_user
+                        break  # Exit loop after successful creation
+    
+                    except Exception as e:
+                        # Generisches Abfangen der Exception, um spezifische Fehler wie ObjectAlreadyExistsException zu behandeln
+                        if "ObjectAlreadyExistsException" in str(e):
+                            self.__screen.addstr(new_pass_y + 2, curses.COLS // 2 - 20, "User already exists. Try a different username.", curses.A_BOLD)
+                        else:
+                            self.__screen.addstr(new_pass_y + 2, curses.COLS // 2 - 20, "An error occurred. Please try again.", curses.A_BOLD)
+                        self.__screen.refresh()
+                        self.__screen.getch()
+    
+            # Password input
+            self.__screen.clear()
             self.__screen.refresh()
-            self.__screen.getch()
-            self.resetTerm()
-            exit()
-
+            password_prompt = f"Enter password for {selected_user}: "
+            pass_y = 10
+            pass_x = curses.COLS // 2 - len(password_prompt) // 2
+            self.__screen.addstr(pass_y, pass_x, password_prompt)
+            self.__screen.refresh()
+            entered_password = self.get_input(pass_y, pass_x + len(password_prompt), password=True)
+    
+            # Authentication
+            if self.__dataHandler.getCryptor().isCorrectKey(entered_password, self.__dataHandler.getKey(selected_user)):
+                self.__dataHandler.startSession()
+                self.__screen.addstr(pass_y + 2, pass_x, "Login successful! Press any key to continue.", curses.A_BOLD)
+                self.__screen.refresh()
+                self.__screen.getch()
+                self.main_menu(self.__screen)
+            else:
+                self.__screen.addstr(pass_y + 2, pass_x, "Incorrect password! Press any key to exit.", curses.A_BOLD)
+                self.__screen.refresh()
+                self.__screen.getch()
+                self.resetTerm()
+                exit()
+    
     def main_menu(self) -> None:
         curses.curs_set(0)
         curses.start_color()
