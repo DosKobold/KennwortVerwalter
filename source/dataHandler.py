@@ -42,6 +42,9 @@ class DataHandler:
                 data.append(row)
         return data
 
+    def getCryptor(self) -> cryptor.Cryptor:
+        return self.__cryptor
+
     def createFile(self, path: str, user: str, key: str) -> None:
         """0th step: create file"""
         with open(path, "w", encoding="utf-8") as file:

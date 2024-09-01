@@ -106,7 +106,7 @@ class Frontend:
             self.__screen.refresh()
             new_pass = self.get_input(new_pass_y, new_pass_x + len(new_pass_prompt), password=True)
 
-            self.__dataHandler.addUser(new_user, self.__dataHandler._DataHandler__cryptor.hashKey(new_pass, True))
+            self.__dataHandler.addUser(new_user, self.__dataHandler.getCryptor().hashKey(new_pass, True))
             self.__screen.addstr(new_pass_y + 2, curses.COLS // 2 - 10, f"User {new_user} created.", curses.A_BOLD)
             self.__screen.refresh()
             self.__screen.getch()
@@ -123,7 +123,7 @@ class Frontend:
         entered_password = self.get_input(pass_y, pass_x + len(password_prompt), password=True)
 
         # Authentication
-        if self.__dataHandler._DataHandler__cryptor.isCorrectKey(entered_password, self.__dataHandler.getKey(selected_user)):
+        if self.__dataHandler.getCryptor().isCorrectKey(entered_password, self.__dataHandler.getKey(selected_user)):
             self.__dataHandler.startSession()
             self.__screen.addstr(pass_y + 2, pass_x, "Login successful! Press any key to continue.", curses.A_BOLD)
             self.__screen.refresh()
@@ -146,7 +146,7 @@ class Frontend:
 
         current_row = 0
         menu: list[str] = [
-            'Add Entry', 'View Entries', 'Edit Entry', 'Delete Entry', 'Generate Password',
+            'Add Entry', 'View Entries', 'Edit Entry', 'Delete Category', 'Delete Entry', 'Generate Password',
             'Check Password Security', 'Delete Current User', 'Logout and Return to Login Screen', 'Exit'
         ]
 
@@ -178,14 +178,16 @@ class Frontend:
                 elif current_row == 2:
                     self.edit_entry()
                 elif current_row == 3:
-                    self.delete_entry()
+                    self.delete_category() 
                 elif current_row == 4:
-                    self.generate_password()
+                    self.delete_entry()
                 elif current_row == 5:
-                    self.check_password_security()
+                    self.generate_password()
                 elif current_row == 6:
-                    self.delete_current_user()
+                    self.check_password_security()
                 elif current_row == 7:
+                    self.delete_current_user()
+                elif current_row == 8:
                     self.back_to_login()
                 elif current_row == 8:
                     self.resetTerm()
@@ -194,6 +196,67 @@ class Frontend:
             self.__screen.refresh()
     
         exit()
+
+    def delete_category(self) -> None:
+        curses.curs_set(0)
+        self.__screen.clear()
+        self.__screen.refresh()
+
+        # Kategorien anzeigen und auswählen
+        self.__screen.addstr(0, 0, "Select a category to delete:")
+        categories = self.__dataHandler.getCategories()
+        if not categories:
+            self.__screen.addstr(2, 0, "No categories available. Press any key to return to the main menu.")
+            self.__screen.getch()
+            return
+
+        current_selection = 0
+
+        # Kategorie-Auswahlmenü
+        while True:
+            self.__screen.clear()
+            self.__screen.addstr(0, 0, "Select a category to delete:")
+            
+            for idx, category in enumerate(categories):
+                x = curses.COLS // 2 - len(category) // 2
+                y = 2 + idx
+                if idx == current_selection:
+                    self.__screen.attron(curses.A_REVERSE)
+                    self.__screen.addstr(y, x, category)
+                    self.__screen.attroff(curses.A_REVERSE)
+                else:
+                    self.__screen.addstr(y, x, category)
+            
+            key = self.__screen.getch()
+            
+            if key == curses.KEY_UP and current_selection > 0:
+                current_selection -= 1
+            elif key == curses.KEY_DOWN and current_selection < len(categories) - 1:
+                current_selection += 1
+            elif key in (curses.KEY_ENTER, 10, 13):
+                selected_category = categories[current_selection]
+                break
+
+            self.__screen.refresh()
+
+        # Bestätigungsabfrage zur Löschung der ausgewählten Kategorie
+        self.__screen.clear()
+        self.__screen.addstr(0, 0, f"Do you really want to delete the category '{selected_category}'?")
+        self.__screen.addstr(1, 0, "Press 'y' to confirm or any other key to cancel.")
+        self.__screen.refresh()
+        choice = self.__screen.get_wch()
+
+        # Bestätigen, ob gelöscht werden soll
+        if choice in ('y', 'Y'):
+            self.__dataHandler.remCategory(selected_category)
+            self.__screen.clear()
+            self.__screen.addstr(0, 0, "Category deleted! Press any key to return to the main menu.")
+        else:
+            self.__screen.clear()
+            self.__screen.addstr(0, 0, "Deletion cancelled. Press any key to return to the main menu.")
+
+        self.__screen.refresh()
+        self.__screen.getch()
 
     def ensure_default_category(self) -> None:
         categories = self.__dataHandler.getCategories()
@@ -631,7 +694,7 @@ class Frontend:
 
         # Generierung des Passworts
         try:
-            password = self.__dataHandler._DataHandler__cryptor.genPassword(
+            password = self.__dataHandler.getCryptor().genPassword(
                 length,
                 include_digits,
                 include_special,
@@ -660,7 +723,7 @@ class Frontend:
         password = self.get_input(2, len("Enter password to check: "), password=True)
 
         # Überprüfung der Passwortsicherheit
-        is_secure, message = self.__dataHandler._DataHandler__cryptor.isSafe(password)
+        is_secure, message = self.__dataHandler.getCryptor().isSafe(password)
 
         # Ergebnisanzeige
         if is_secure:

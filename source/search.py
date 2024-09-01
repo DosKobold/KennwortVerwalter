@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
+
 import curses
 from typing import List, Optional
 
 class SearchBar:
+    __screen: curses.window
+    __items: list[str]
+    __filtered_items: list[str]
+    __query: str
+
     def __init__(self, screen: curses.window, items: List[str]):
         self.__screen: curses.window = screen
         self.__items: List[str] = items
@@ -44,8 +50,6 @@ class SearchBar:
         self.__filtered_items = [item for item in self.__items if self.__query.lower() in item.lower()]
 
     def display_results(self) -> None:
-        max_height: int
-        max_width: int
         max_height, max_width = self.__screen.getmaxyx()
         for idx, item in enumerate(self.__filtered_items[:max_height - 2]):
             self.__screen.addstr(idx + 2, 0, item[:max_width - 1])
