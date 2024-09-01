@@ -12,6 +12,7 @@ import os
 from dataHandler import DataHandler
 from search import SearchBar
 from cryptor import Cryptor
+import time
 
 class Frontend:
     __screen: curses.window
@@ -345,17 +346,33 @@ class Frontend:
         self.__screen.addstr(4, 10, "search: ")
 
         items: list[str] = self.__dataHandler.getEntries(category)
+        if not items:
+            self.__screen.addstr(curses.LINES // 3, curses.COLS // 2, "No entries available")
+            self.__screen.refresh()
+            time.sleep(1)
+            return
+
         search_bar = SearchBar(self.__screen, items)
+
         selected: str = search_bar.display()
+        if selected == "":
+            self.__screen.addstr(curses.LINES // 3, curses.COLS // 2, "No entries available")
+            self.__screen.refresh()
+            time.sleep(1)
+            return
+
         found = self.__dataHandler.getEntry(category, selected)
-        if selected == "" or not found or not items:
+        if not found:
+            self.__screen.addstr(curses.LINES // 3, curses.COLS // 2, "No entries available")
+            self.__screen.refresh()
+            time.sleep(1)
             return
 
         i: int = 0
-        self.__screen.addstr(curses.LINES // 2 + i, curses.COLS // 2, f"Title: {selected}")
+        self.__screen.addstr(curses.LINES // 3 + i, curses.COLS // 2, f"Title: {selected}")
         for key in found:
             i += 1
-            self.__screen.addstr(curses.LINES // 2 + i, curses.COLS // 2, f"{key}: {found[key]}")
+            self.__screen.addstr(curses.LINES // 3 + i, curses.COLS // 2, f"{key}: {found[key]}")
         self.__screen.refresh()
         self.__screen.addstr(curses.LINES - curses.LINES // 4, 0, "Press any key to return to the main menu.")
         self.__screen.getch()
