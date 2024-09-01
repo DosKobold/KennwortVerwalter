@@ -50,6 +50,7 @@ class SearchBar:
         self.__screen.refresh()
 
     def handle_selection(self):
+        selected_item: str = ""
         if self.filtered_items:
             selected_item = self.filtered_items[0]
             self.__screen.clear()
