@@ -10,6 +10,8 @@ class SearchBar:
         self.__query = ""
 
     def display(self):
+        selected: str = ""
+
         self.__screen.clear()
         self.__screen.refresh()
 
@@ -26,11 +28,13 @@ class SearchBar:
             elif key in (curses.KEY_BACKSPACE, 127):
                 self.__query = self.__query[:-1]
             elif key in (curses.KEY_ENTER, 10, 13):
-                self.handle_selection()
+                selected = self.handle_selection()
+                break
             elif key in (curses.KEY_UP, curses.KEY_DOWN):
                 continue
             else:
                 self.__query += chr(key)
+        return selected
 
     def draw_search_bar(self):
         self.__screen.addstr(0, 0, "Search: " + self.__query)
@@ -52,3 +56,4 @@ class SearchBar:
             self.__screen.addstr(0, 0, f"Selected: {selected_item}")
             self.__screen.refresh()
             self.__screen.getch()
+        return selected_item

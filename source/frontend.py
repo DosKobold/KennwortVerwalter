@@ -342,8 +342,17 @@ class Frontend:
 
         items: list[str] = self.__dataHandler.getEntries(category)
         search_bar = SearchBar(self.__screen, items)
-        search_bar.display()
-        self.__screen.addstr(len(items) + 8, 0, "Press any key to return to the main menu.")
+        selected: str = search_bar.display()
+        found = self.__dataHandler.getEntry(category, selected)
+        if selected == "" or not found or not items:
+            return
+
+        i: int = 0
+        for key in found:
+            self.__screen.addstr(curses.LINES // 2 + i, curses.COLS // 2, f"{key}: {found[key]}")
+            i += 1
+        self.__screen.refresh()
+        self.__screen.addstr(curses.LINES - curses.LINES // 4, 0, "Press any key to return to the main menu.")
         self.__screen.getch()
 
     def edit_entry(self) -> None:
