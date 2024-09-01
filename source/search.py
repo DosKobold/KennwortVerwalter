@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-
 import curses
+from typing import List, Optional
 
 class SearchBar:
-    def __init__(self, screen, items):
-        self.__screen = screen
-        self.__items = items
-        self.__filtered_items = items
-        self.__query = ""
+    def __init__(self, screen: curses.window, items: List[str]):
+        self.__screen: curses.window = screen
+        self.__items: List[str] = items
+        self.__filtered_items: List[str] = items
+        self.__query: str = ""
 
-    def display(self):
+    def display(self) -> str:
         selected: str = ""
 
         self.__screen.clear()
@@ -21,7 +21,7 @@ class SearchBar:
             self.filter_items()
             self.display_results()
 
-            key = self.__screen.getch()
+            key: int = self.__screen.getch()
 
             if key in (curses.KEY_EXIT, 27):
                 break
@@ -36,23 +36,25 @@ class SearchBar:
                 self.__query += chr(key)
         return selected
 
-    def draw_search_bar(self):
+    def draw_search_bar(self) -> None:
         self.__screen.addstr(0, 0, "Search: " + self.__query)
         self.__screen.refresh()
 
-    def filter_items(self):
-        self.filtered_items = [item for item in self.__items if self.__query.lower() in item.lower()]
+    def filter_items(self) -> None:
+        self.__filtered_items = [item for item in self.__items if self.__query.lower() in item.lower()]
 
-    def display_results(self):
+    def display_results(self) -> None:
+        max_height: int
+        max_width: int
         max_height, max_width = self.__screen.getmaxyx()
-        for idx, item in enumerate(self.filtered_items[:max_height - 2]):
+        for idx, item in enumerate(self.__filtered_items[:max_height - 2]):
             self.__screen.addstr(idx + 2, 0, item[:max_width - 1])
         self.__screen.refresh()
 
-    def handle_selection(self):
+    def handle_selection(self) -> str:
         selected_item: str = ""
-        if self.filtered_items:
-            selected_item = self.filtered_items[0]
+        if self.__filtered_items:
+            selected_item = self.__filtered_items[0]
             self.__screen.clear()
             self.__screen.addstr(0, 0, f"Selected: {selected_item}")
             self.__screen.refresh()
